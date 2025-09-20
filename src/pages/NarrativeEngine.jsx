@@ -81,7 +81,18 @@ export default function NarrativeEngine() {
   };
 
   const generateAIContent = async (type, context) => {
-    const prompt = `Generate ${type} dialogue for a Gen 3 ROM hack. Context: ${JSON.stringify(context)}. ROMancer Mode: ${romancerMode ? 'ENABLED - add surreal, poetic elements' : 'DISABLED'}. Keep it authentic to Gen 3. RETURN ONLY A JSON OBJECT`;
+    const prompt = `
+      Generate ${type} dialogue for a Gen 3 ROM hack. 
+      Context: ${JSON.stringify(context)}. 
+      ROMancer Mode: ${romancerMode ? 'ENABLED - add surreal, poetic elements' : 'DISABLED'}. 
+      Keep it authentic to Gen 3. 
+      RETURN ONLY A VALID JSON OBJECT WRAPPED IN TRIPLE BACKTICKS WITH JSON SYNTAX HIGHLIGHTING 
+      and a dialogue array with objects with text values: 
+      \`\`\`json 
+        { dialogue: [{ text: "..." }, { text: "..." }] } 
+      \`\`\`
+      VALIDATE IT IS PROPER JSON BEFORE RETURNING.
+    `;
     return await quickQuery(prompt, { add_context_from_app: true });
   };
 

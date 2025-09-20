@@ -26,13 +26,18 @@ export default function DialogueGenerator({
         romancerModeEnabled
       });
 
+      // Sometimes the AI omits spaces around code blocks, so ensure proper formatting
+      dialogue = dialogue.replace("```json", "```json ");
+      dialogue = dialogue.replace("}```", "} ```");
+
       try {
         // TODO: Extract this to a utility function for reuse
         const codeBlockMatch = dialogue.match(/```json\s*([\s\S]*?)```/);
+
         if (codeBlockMatch) {
           const jsonString = codeBlockMatch[1].trim();
-
           const parsed = JSON.parse(jsonString);
+
           if (parsed.dialogue && Array.isArray(parsed.dialogue)) {
             dialogue = parsed.dialogue.map(d => d.text).join('\n\n');
           }
