@@ -34,7 +34,7 @@ export default function NarrativeEngine() {
   const loadNarrativeData = async () => {
     setIsLoading(true);
     setLoadError(null);
-    
+
     try {
       const [events, npcs, flags, scripts] = await Promise.all([
         StoryEvent.list('-created_date'),
@@ -49,7 +49,7 @@ export default function NarrativeEngine() {
     } catch (error) {
       console.error('Error loading narrative data:', error);
       setLoadError(error);
-      
+
       // Provide empty arrays as fallback to prevent crashes
       setStoryEvents([]);
       setNpcProfiles([]);
@@ -81,7 +81,7 @@ export default function NarrativeEngine() {
   };
 
   const generateAIContent = async (type, context) => {
-    const prompt = `Generate ${type} for a Gen 3 ROM hack. Context: ${JSON.stringify(context)}. ROMancer Mode: ${romancerMode ? 'ENABLED - add surreal, poetic elements' : 'DISABLED'}. Keep it authentic to Gen 3.`;
+    const prompt = `Generate ${type} dialogue for a Gen 3 ROM hack. Context: ${JSON.stringify(context)}. ROMancer Mode: ${romancerMode ? 'ENABLED - add surreal, poetic elements' : 'DISABLED'}. Keep it authentic to Gen 3. RETURN ONLY A JSON OBJECT`;
     return await quickQuery(prompt, { add_context_from_app: true });
   };
 
@@ -121,7 +121,7 @@ export default function NarrativeEngine() {
         </header>
 
         {loadError ? (
-          <EntityErrorHandler 
+          <EntityErrorHandler
             error={loadError}
             entityName="Narrative Data"
             onRetry={retryLoad}
@@ -129,28 +129,28 @@ export default function NarrativeEngine() {
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 bg-slate-200 dark:bg-slate-800/50 rounded-xl p-1 mb-4">
-              <TabsTrigger 
-                value="events" 
+              <TabsTrigger
+                value="events"
                 className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:text-purple-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-300"
               >
-                <FileText className="w-4 h-4" /> 
+                <FileText className="w-4 h-4" />
                 Story Events
               </TabsTrigger>
-              <TabsTrigger 
-                value="npcs" 
+              <TabsTrigger
+                value="npcs"
                 className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:text-purple-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-300"
               >
-                <Users className="w-4 h-4" /> 
+                <Users className="w-4 h-4" />
                 NPC Vault
               </TabsTrigger>
-            <TabsTrigger 
-              value="dialogue" 
-              className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:text-purple-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-300"
-            >
-              <Wand2 className="w-4 h-4" /> 
-              Dialogue AI
-            </TabsTrigger>
-          </TabsList>
+              <TabsTrigger
+                value="dialogue"
+                className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:text-purple-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-300"
+              >
+                <Wand2 className="w-4 h-4" />
+                Dialogue AI
+              </TabsTrigger>
+            </TabsList>
 
             <TabsContent value="events">
               <StoryEventTracker events={storyEvents} flags={projectFlags} scripts={projectScripts} onCreateEvent={createNewStoryEvent} />
@@ -159,7 +159,7 @@ export default function NarrativeEngine() {
               <NPCLoreVault npcs={npcProfiles} events={storyEvents} onCreateNPC={createNewNPC} />
             </TabsContent>
             <TabsContent value="dialogue">
-              <DialogueGenerator npcs={npcProfiles} events={storyEvents} onGenerate={generateAIContent} />
+              <DialogueGenerator npcs={npcProfiles} events={storyEvents} onGenerate={generateAIContent} romancerModeEnabled={romancerMode} />
             </TabsContent>
           </Tabs>
         )}

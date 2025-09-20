@@ -5,11 +5,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Wand2, Copy, RefreshCw, Sparkles } from 'lucide-react';
 
-export default function DialogueGenerator({ 
-  npcs, 
-  events, 
-  romancerMode, 
-  onGenerate 
+export default function DialogueGenerator({
+  npcs,
+  events,
+  romancerModeEnabled,
+  onGenerate
 }) {
   const [selectedNPC, setSelectedNPC] = useState(null);
   const [generatedDialogue, setGeneratedDialogue] = useState('');
@@ -17,14 +17,30 @@ export default function DialogueGenerator({
 
   const handleGenerateDialogue = async (type) => {
     setIsGenerating(true);
-    
+
     // Simulate AI generation delay
-    setTimeout(() => {
-      const dialogue = onGenerate('npc_dialogue', { 
-        npc: selectedNPC, 
-        type, 
-        romancerMode 
+    setTimeout(async () => {
+      let dialogue = await onGenerate('npc_dialogue', {
+        npc: selectedNPC,
+        type,
+        romancerModeEnabled
       });
+
+      try {
+        // TODO: Extract this to a utility function for reuse
+        const codeBlockMatch = dialogue.match(/```json\s*([\s\S]*?)```/);
+        if (codeBlockMatch) {
+          const jsonString = codeBlockMatch[1].trim();
+
+          const parsed = JSON.parse(jsonString);
+          if (parsed.dialogue && Array.isArray(parsed.dialogue)) {
+            dialogue = parsed.dialogue.map(d => d.text).join('\n\n');
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing generated dialogue:', error);
+      }
+
       setGeneratedDialogue(dialogue);
       setIsGenerating(false);
     }, 1500);
@@ -40,7 +56,7 @@ export default function DialogueGenerator({
         <h2 className="text-2xl font-bold text-yellow-400 mb-4">Dialogue Generator</h2>
         <p className="text-slate-400">
           Generate contextual dialogue for your NPCs using AI assistance.
-          {romancerMode && " ✨ ROMancer Mode will add surreal and poetic elements."}
+          {romancerModeEnabled && " ✨ ROMancer Mode will add surreal and poetic elements."}
         </p>
       </div>
 
@@ -68,7 +84,7 @@ export default function DialogueGenerator({
                 </Button>
               ))}
             </div>
-            
+
             {npcs.length === 0 && (
               <p className="text-slate-400 text-center py-4">
                 No NPCs available. Create some in the NPC Vault first.
@@ -115,7 +131,7 @@ export default function DialogueGenerator({
                 Mysterious
               </Button>
             </div>
-            
+
             {selectedNPC && (
               <div className="p-3 bg-slate-800 rounded-lg">
                 <p className="text-yellow-400 font-bold mb-1">{selectedNPC.name}</p>
@@ -140,9 +156,9 @@ export default function DialogueGenerator({
                 <Copy className="w-4 h-4 mr-2" />
                 Copy
               </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => handleGenerateDialogue('refresh')}
                 disabled={isGenerating}
               >
@@ -161,7 +177,7 @@ export default function DialogueGenerator({
           </CardContent>
         </Card>
       )}
-      
+
       {isGenerating && (
         <Card className="bg-slate-900 border-slate-700">
           <CardContent className="p-12 text-center">
