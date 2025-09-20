@@ -29,7 +29,7 @@ export const LabAssistantProvider = ({ children }) => {
   // CRITICAL: Only initialize on mount, not on every render
   const initializeKnowledge = useCallback(async () => {
     if (knowledgeInitialized) return; // Prevent multiple calls
-    
+
     try {
       const entries = await KnowledgeEntry.list();
       setKnowledgeEntries(entries);
@@ -184,32 +184,32 @@ export const LabAssistantProvider = ({ children }) => {
   const callAIWithRetry = async (prompt, options = {}) => {
     const maxRetries = 2;
     const timeout = 30000;
-    
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       let timeoutId;
-      
+
       try {
         const controller = new AbortController();
         timeoutId = setTimeout(() => controller.abort(), timeout);
-        
+
         const result = await InvokeLLM({
           prompt,
           add_context_from_internet: options.useInternet || false,
           add_context_from_app: true,
           ...options
         });
-        
+
         clearTimeout(timeoutId);
         setOllamaStatus('ready');
         return result;
-        
+
       } catch (error) {
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
-        
+
         console.warn(`AI call attempt ${attempt} failed:`, error.message);
-        
+
         if (attempt === maxRetries) {
           if (error.name === 'AbortError' || error.message.includes('aborted')) {
             setOllamaStatus('timeout');
@@ -222,7 +222,7 @@ export const LabAssistantProvider = ({ children }) => {
             throw new Error(`AI service error: ${error.message}`);
           }
         }
-        
+
         await new Promise(resolve => setTimeout(resolve, attempt * 2000));
       }
     }
@@ -272,7 +272,7 @@ export const LabAssistantProvider = ({ children }) => {
 All your work will be saved locally and sync when you're back online.`,
         timestamp: new Date().toISOString()
       };
-      
+
       setMessages(prev => [...prev, { role: 'user', content: query }, offlineMessage]);
       return;
     }
@@ -307,7 +307,7 @@ Provide detailed, technical assistance. Include specific examples, code snippets
         }
       }
 
-  const response = await callAIWithRetry(enhancedPrompt, { add_context_from_app: true });
+      const response = await callAIWithRetry(enhancedPrompt, { add_context_from_app: true });
 
       const assistantMessage = {
         role: 'assistant',
@@ -318,7 +318,7 @@ Provide detailed, technical assistance. Include specific examples, code snippets
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('AI processing failed:', error);
-      
+
       const errorMessage = {
         role: 'assistant',
         content: `**AI Service Unavailable**
@@ -336,7 +336,7 @@ ${error.message}
 *Try again in a few moments, or explore the offline resources available in each module.*`,
         timestamp: new Date().toISOString()
       };
-      
+
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -351,8 +351,8 @@ ${error.message}
 
     try {
       const mergedOptions = { add_context_from_app: true, ...options };
-  const response = await callAIWithRetry(query, mergedOptions);
-  return sanitizeResult(response, mergedOptions);
+      const response = await callAIWithRetry(query, mergedOptions);
+      return sanitizeResult(response, mergedOptions);
     } catch (error) {
       console.error('Quick query failed:', error.message);
 
