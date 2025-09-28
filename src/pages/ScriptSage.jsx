@@ -1,436 +1,467 @@
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+// ScriptSage with Performance Improvements
+import { useLabAssistant } from "@/components/shared/LabAssistantService.jsx";
+import { PageShell, StatusIndicator } from "@/components/shared/PageShell.jsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Code, Share2, Bot, Wand2, MessageSquare, Send, Sparkles } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { useQuickAssist } from '@/components/shared/LabAssistantService';
-import RawOutputModal from '@/components/shared/RawOutputModal';
-import { motion } from "framer-motion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAppState } from "@/lib/appState.jsx";
+import {
+  buildScriptGenPrompt,
+  sanitizeGeneratedScript,
+} from "@/lib/llmUtils.js";
+import { analyzeHMAScript } from "@/lib/scriptAnalyzer.js";
+import {
+  AlertCircle,
+  BookOpen,
+  Code,
+  Cpu,
+  FileText,
+  FlaskConical,
+} from "lucide-react";
+import React, { Suspense, lazy, useMemo, useState } from "react";
 
-import ScriptEditorTabs from '@/components/scriptsage/ScriptEditorTabs';
-import VisualScriptFlow from '@/components/scriptsage/VisualScriptFlow';
+// Lazy load heavy components
+const ScriptEditor = lazy(() => import("@/components/scriptsage/ScriptEditor"));
+const ScriptAnalysisPanel = lazy(() =>
+  import("@/components/scriptsage/ScriptAnalysisPanel")
+);
+const VisualScriptFlow = lazy(() =>
+  import("@/components/scriptsage/VisualScriptFlow")
+);
+const CommandReference = lazy(() =>
+  import("@/components/scriptsage/CommandReference")
+);
+const ScriptTemplatesComponent = lazy(() =>
+  import("@/components/scriptsage/ScriptTemplatesComponent")
+);
+const ProgrammaticGeneratorComponent = lazy(() =>
+  import("@/components/scriptsage/ProgrammaticGenerator")
+);
 
-const scriptAIPrompts = [
-  "Debug this script for syntax errors and logic issues",
-  "Generate a gym leader battle script with pre/post dialogue",
-  "Create an NPC that gives an item once with flag checking",
-  "Write a script for a complex multi-character cutscene",
-  "Convert this script to use better HMA practices",
-  "Add movement commands to make this more dynamic",
-  "Generate dialogue for a mysterious character encounter",
-  "Create a shop script with custom items"
-];
+// Import ScriptTemplates directly since it only has named exports
+import { scriptTemplates } from "@/components/scriptsage/ScriptTemplates";
 
-export default function ScriptSage() {
-  const [script, setScript] = useState(`main_script:\n  lock\n  faceplayer\n  msgbox.default <hello_text>\n  release\n  end\n\nhello_text:\n{\n  Hello, ROM Hacker!\n  This is Script Sage, your ultimate\n  HMA/XSE scripting companion.\n}`);
+const LoadingFallback = ({ height = "400px" }) => (
+  <div
+    className="flex items-center justify-center bg-muted rounded-lg"
+    style={{ height }}
+  >
+    <div className="animate-pulse text-muted-foreground">Loading...</div>
+  </div>
+);
+
+const ScriptSage = () => {
+  const { state, actions, selectors } = useAppState();
+  const { ollamaStatus, quickQuery, showAssistant } = useLabAssistant();
+
+  // Local UI state
   const [activeTab, setActiveTab] = useState("editor");
-  const [showVisualFlow, setShowVisualFlow] = useState(false);
-  const [showAIPanel, setShowAIPanel] = useState(false);
-  const [aiInput, setAiInput] = useState('');
-  const [aiMessages, setAiMessages] = useState([]);
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const { quickQuery, ollamaStatus, retryWithStrictPrompt } = useQuickAssist();
-  
-  const [debouncedScript, setDebouncedScript] = useState({ content: script, name: 'Current Script' });
-  const [rawOutputOpen, setRawOutputOpen] = useState(false);
-  const [rawOutput, setRawOutput] = useState('');
-  const [rawRetrying, setRawRetrying] = useState(false);
+  const [editorContent, setEditorContent] = useState("");
+  const [initialName, setInitialName] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [scriptAnalysis, setScriptAnalysis] = useState(null);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedScript({ content: script, name: 'Current Script' });
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [script]);
+  const currentProject = state?.currentProject;
+  const activeProject = state?.activeProject || currentProject;
+  const totalScripts = activeProject?.scripts?.length || 0;
 
-  const insertSnippet = (snippetCode) => {
-    setScript(prev => `${prev}\n\n${snippetCode}`);
-    setActiveTab("editor");
-  };
-
-  const handleAIQuery = async (query) => {
-    if (!query.trim()) return;
-
-    setIsAiLoading(true);
-    const userMessage = { role: 'user', content: query, timestamp: Date.now() };
-    setAiMessages(prev => [...prev, userMessage]);
-
+  // Context passed into analysis/generation
+  const templatesList = useMemo(
+    () => Object.values(scriptTemplates || {}),
+    [scriptTemplates]
+  );
+  const commandDocs = useMemo(() => {
     try {
-      const contextualPrompt = `You are a world-class expert in HMA (Hex Maniac Advance) and XSE scripting, specifically for Pokémon Emerald (Generation 3). Your output must be 100% syntactically correct and ready to be compiled. You ONLY generate the script code itself.
+      // Get commands from registry and format for analysis
+      const { getCommandRegistry } = require("@/lib/commandRegistry.js");
+      const registry = getCommandRegistry();
+      const allCommands = registry.getAllCommands();
+      return allCommands.map((cmd) => ({
+        command: cmd.command,
+        description: cmd.description,
+        syntax: cmd.syntax,
+        category: cmd.category,
+        confidence: cmd.confidence,
+        examples: cmd.examples,
+      }));
+    } catch (_e) {
+      return selectors?.getCommandDocs ? selectors.getCommandDocs() : [];
+    }
+  }, [selectors]);
+  const nextSectionNumber = useMemo(() => {
+    try {
+      return (activeProject?.scripts?.length || 0) + 1;
+    } catch (_e) {
+      return 1;
+    }
+  }, [activeProject?.scripts]);
 
-**HMA/XSE SYNTAX CHEAT SHEET:**
-
-1.  **Labels:** End with a colon. Example: \`my_script_label:\`
-2.  **Pointers:** Reference labels or text using angle brackets. Example: \`goto <my_script_label>\`
-3.  **Control Flow:**
-    *   \`lock\`: Freezes the player.
-    *   \`release\`: Unfreezes the player.
-    *   \`end\`: Terminates the script.
-4.  **Dialogue & Text:**
-    *   **Command:** \`msgbox.TYPE <text_label>\` (Common Types: default, sign, yesno)
-    *   **Text Block Definition (CRITICAL):** Text blocks MUST be defined with a label and curly braces on separate lines.
-        \`\`\`
-        text_label:
-        {
-          This is the only correct way to define
-          text for a message box.
+  // Define reusable editor props for shared functionality
+  const editorProps = useMemo(
+    () => ({
+      projectId: currentProject?.id,
+      onScriptChange: (content) => setEditorContent(content),
+      initialContent: editorContent,
+      initialName,
+      analysisState: scriptAnalysis,
+      onAnalyze: async () => {
+        try {
+          setIsAnalyzing(true);
+          const result = await analyzeHMAScript(editorContent || "", {
+            knowledgeEntries: [],
+            templates: templatesList,
+            commandDocs,
+          });
+          setScriptAnalysis(result);
+        } catch (_err) {
+          console.error("Script analysis failed", err);
+          setScriptAnalysis({
+            validation: {
+              isValid: false,
+              errors: [err.message || "Analysis failed"],
+            },
+            analysis: {},
+            suggestions: [],
+            commandDocs: [],
+          });
+        } finally {
+          setIsAnalyzing(false);
         }
-        \`\`\`
-5.  **Movement:**
-    *   \`applymovement.PERSON_ID.<movement_data>\` (PERSON_ID can be a number or PLAYER)
-    *   \`waitmovement.PERSON_ID\`
-6.  **Flags & Logic:**
-    *   \`setflag.FLAG_ID\`
-    *   \`clearflag.FLAG_ID\`
-    *   \`checkflag.FLAG_ID\` (result goes to lastresult)
-    *   \`if.VALUE.goto <label>\` (e.g., if.1.goto <is_set>)
+      },
+      onGenerate: async (preset) => {
+        try {
+          if (ollamaStatus === "ready") {
+            const prompt = buildScriptGenPrompt(
+              preset,
+              templatesList,
+              commandDocs
+            );
+            const generated = await quickQuery(prompt, {
+              temperature: 0.2,
+              max_tokens: 2048,
+            });
+            if (generated && typeof generated === "string") {
+              const result = sanitizeGeneratedScript(
+                generated,
+                nextSectionNumber
+              );
+              if (result && result.text) {
+                setEditorContent(result.text);
+                // If there are unknown commands, surface them in scriptAnalysis so the Analysis panel can offer to add them
+                if (result.unknownCommands && result.unknownCommands.length) {
+                  const cmds = result.unknownCommands;
+                  if (ollamaStatus === "ready") {
+                    try {
+                      const contextSnippet = (editorContent || "").slice(
+                        0,
+                        4000
+                      );
+                      const descriptions = await Promise.all(
+                        cmds.map(async (cmd) => {
+                          const prompt = `You are an expert in HMA/XSE scripting. Given the following script context, provide a one-line description of what the command '${cmd}' likely does. If uncertain, respond with 'Unclear - requires human review'.\n\nContext:\n${contextSnippet}`;
+                          const descRaw = await quickQuery(prompt, {
+                            temperature: 0.0,
+                            max_tokens: 120,
+                          });
+                          const desc =
+                            typeof descRaw === "string" && descRaw.trim()
+                              ? descRaw.trim().split("\n")[0]
+                              : "Unclear - requires human review";
+                          return { command: cmd, description: desc };
+                        })
+                      );
+                      setScriptAnalysis((prev) => ({
+                        ...(prev || {}),
+                        commandDocs: [
+                          ...(prev?.commandDocs || []),
+                          ...descriptions,
+                        ],
+                      }));
+                    } catch (_e) {
+                      setScriptAnalysis((prev) => ({
+                        ...(prev || {}),
+                        commandDocs: [
+                          ...(prev?.commandDocs || []),
+                          ...cmds.map((c) => ({
+                            command: c,
+                            description: "Unknown - suggested by generator",
+                          })),
+                        ],
+                      }));
+                    }
+                  } else {
+                    setScriptAnalysis((prev) => ({
+                      ...(prev || {}),
+                      commandDocs: [
+                        ...(prev?.commandDocs || []),
+                        ...cmds.map((c) => ({
+                          command: c,
+                          description: "Unknown - suggested by generator",
+                        })),
+                      ],
+                    }));
+                  }
+                }
+                return;
+              }
+            }
+          }
+          const fallbackRaw = `; ${preset}\nfaceplayer\nmsgbox.npc <message>\nrelease`;
+          const fb = sanitizeGeneratedScript(fallbackRaw, nextSectionNumber);
+          setEditorContent(fb.text || fb);
+        } catch (_err) {
+          console.error("Generation failed", err);
+          const fallbackRaw = `; ${preset}\nfaceplayer\nmsgbox.npc <message>\nrelease`;
+          const fb = sanitizeGeneratedScript(fallbackRaw, nextSectionNumber);
+          setEditorContent(fb.text || fb);
+        }
+      },
+      ollamaStatus,
+      isAnalyzing,
+      onExport: () => {
+        try {
+          const blob = new Blob([editorContent || ""], {
+            type: "text/plain;charset=utf-8",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${initialName || "script"}.asm`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        } catch (_err) {
+          console.error("Export failed", err);
+        }
+      },
+      onShowAssistant: showAssistant,
+      scriptAnalysis,
+    }),
+    [
+      currentProject?.id,
+      editorContent,
+      initialName,
+      scriptAnalysis,
+      isAnalyzing,
+      ollamaStatus,
+      quickQuery,
+      showAssistant,
+      templatesList,
+      commandDocs,
+      nextSectionNumber,
+      activeProject?.scripts,
+    ]
+  );
 
-**ABSOLUTE "DO NOT" RULES:**
-- DO NOT use \`callasm\`. Use \`call <script_label>\`.
-- DO NOT use \`#org\` for text blocks. Use the label/curly brace format.
-- DO NOT use \`@\` to reference labels (e.g., \`@my_label\`). Use \`<my_label>\`.
-- DO NOT use \`unlock\`. Use \`release\`.
-- DO NOT use \`fanfare\` or \`waitfanfare\`. Use \`playbgm.SONG_ID\` or \`playsound.SE_ID\`.
+  // Memoized tab configuration (analysis tab removed; analysis is inline)
+  const tabConfig = useMemo(
+    () => [
+      {
+        id: "editor",
+        label: "Script Editor",
+        icon: Code,
+        description: "Create and edit HMA/XSE scripts",
+        component: ScriptEditor,
+        props: editorProps,
+      },
+      {
+        id: "generator",
+        label: "AI Generator",
+        icon: FlaskConical,
+        description: "AI-powered script generation",
+        component: ProgrammaticGeneratorComponent,
+        props: {
+          onGenerate: editorProps.onGenerate,
+          onAnalyze: editorProps.onAnalyze,
+          isGenerating: editorProps.isGenerating,
+          quickQuery,
+          ollamaStatus,
+          templatesList,
+          commandDocs,
+          nextSectionNumber,
+          scriptAnalysis,
+          onInsertScript: (script) => {
+            setEditorContent(script);
+            setActiveTab("editor"); // Switch to editor tab after inserting script
+          },
+        },
+      },
+      {
+        id: "templates",
+        label: "Templates",
+        icon: FileText,
+        description: "Quick-start script templates",
+        component: ScriptTemplatesComponent,
+        props: { onTemplateSelect: actions.loadScriptTemplate },
+      },
+      {
+        id: "visual-flow",
+        label: "Visual Flow",
+        icon: Cpu,
+        description: "Visual script flow diagram",
+        component: VisualScriptFlow,
+        props: { activeScript: state.activeScript },
+      },
+      {
+        id: "reference",
+        label: "Commands",
+        icon: BookOpen,
+        description: "HMA command reference",
+        component: CommandReference,
+        props: {},
+      },
+    ],
+    [
+      currentProject?.id,
+      activeProject?.scripts,
+      state.activeScript,
+      actions,
+      editorContent,
+      isAnalyzing,
+      scriptAnalysis,
+      ollamaStatus,
+      initialName,
+      quickQuery,
+      showAssistant,
+      templatesList,
+      commandDocs,
+      nextSectionNumber,
+    ]
+  );
 
-**EXAMPLE OF A PERFECT SCRIPT:**
-\`\`\`
-complex_cutscene_script:
-  lock
-  faceplayer
-  msgbox.default <scene_intro_text>
-  setflag.0x828
-  
-  applymovement.0x1.<npc1_walks_in>
-  waitmovement.0
-  msgbox.default <npc1_dialogue_text>
-  
-  applymovement.0x2.<npc2_walks_in>
-  waitmovement.0
-  msgbox.default <npc2_entry_text>
+  // Memoized active tab data
+  const activeTabData = useMemo(
+    () => tabConfig.find((tab) => tab.id === activeTab),
+    [tabConfig, activeTab]
+  );
 
-  msgbox.default <player_reaction_text>
-  clearflag.0x828
-  release
-  end
-
-npc1_walks_in:
-  walk_left
-  walk_left
-  face_down
-  end_movement
-
-npc2_walks_in:
-  walk_right
-  walk_right
-  face_down
-  end_movement
-
-scene_intro_text:
-{
-  Hello, everyone!
-  We're gathered here today...
-}
-
-npc1_dialogue_text:
-{
-  I'm really excited about this!
-}
-
-npc2_entry_text:
-{
-  Well, I hope everyone is ready!
-}
-
-player_reaction_text:
-{
-  I can't wait to hear what is said!
-}
-\`\`\`
-
-**Your Task:**
-Based on the rules above and the current script context below, fulfill the user's request.
-
-Current Script Context:
-\`\`\`
-${script}
-\`\`\`
-
-User Request: ${query}
-
-Provide ONLY the raw HMA/XSE script code as your response.`;
-
-  const response = await quickQuery(contextualPrompt, { task: 'scriptSage', add_context_from_app: true });
-
-      // Validate that response contains either a code block or valid script text
-      const codeBlockMatch = response && response.match(/```(?:hma|xse|plaintext)?\n([\s\S]*?)\n```/);
-      const scriptText = codeBlockMatch ? codeBlockMatch[1].trim() : response;
-
-      // Basic heuristic: script must contain at least one label ending with ':' and at least one HMA keyword
-      const hasLabel = /\w+:\s*$/.test(scriptText.split('\n').find(l => l.trim()));
-      const hasKeyword = /\b(lock|release|end|msgbox|setflag|checkflag|clearflag)\b/i.test(scriptText);
-      if (!scriptText || !hasLabel || !hasKeyword) {
-        setRawOutput(response);
-        setRawOutputOpen(true);
-        const aiMessage = { role: 'assistant', content: response, timestamp: Date.now() };
-        setAiMessages(prev => [...prev, aiMessage]);
-        setIsAiLoading(false);
-        return;
-      }
-
-      const aiMessage = { role: 'assistant', content: response, timestamp: Date.now() };
-      setAiMessages(prev => [...prev, aiMessage]);
-      
-    } catch (error) {
-      console.error("Error querying AI:", error);
-      let errorMessage = "An error occurred while communicating with the AI.";
-      // This specifically checks for the rate limit error
-      if (error?.response?.status === 429) {
-        errorMessage = "AI is experiencing high traffic. Please wait a moment and try your request again.";
-      }
-      const aiErrorMessage = { role: 'assistant', content: errorMessage, timestamp: Date.now() };
-      setAiMessages(prev => [...prev, aiErrorMessage]);
-    } finally {
-      setIsAiLoading(false);
+  // Auto-center tabs when invalid tab is selected
+  React.useEffect(() => {
+    if (!activeTabData && tabConfig.length > 0) {
+      const centerIndex = Math.floor(tabConfig.length / 2);
+      setActiveTab(tabConfig[centerIndex].id);
     }
-  };
+  }, [activeTabData, tabConfig, setActiveTab]);
 
-  const handleQuickPrompt = (prompt) => {
-    setAiInput(prompt);
-    handleAIQuery(prompt);
-  };
-
-  const handleRetryStrict = async () => {
-    if (!retryWithStrictPrompt) return;
-    setRawRetrying(true);
-    setIsAiLoading(true);
-    try {
-      const strictResp = await retryWithStrictPrompt(rawOutput, null, { temperature: 0.05 });
-      const respStr = typeof strictResp === 'string' ? strictResp : JSON.stringify(strictResp, null, 2);
-      // Try to extract code block first
-      const codeBlockMatch = respStr.match(/```(?:hma|xse|plaintext)?\n([\s\S]*?)\n```/);
-      const scriptText = codeBlockMatch ? codeBlockMatch[1].trim() : respStr.trim();
-
-      // Basic heuristic: must contain at least one label ending with ':' and at least one HMA keyword
-      const hasLabel = /\w+:\s*$/.test(scriptText.split('\n').find(l => l.trim()));
-      const hasKeyword = /\b(lock|release|end|msgbox|setflag|checkflag|clearflag)\b/i.test(scriptText);
-
-      if (scriptText && hasLabel && hasKeyword) {
-        applyAISuggestion(scriptText);
-        setRawOutputOpen(false);
+  // Tab click handler with performance optimization
+  const handleTabChange = React.useCallback(
+    (newTab) => {
+      // Use requestIdleCallback for non-critical state updates
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(() => {
+          setActiveTab(newTab);
+        });
       } else {
-        setRawOutput(respStr);
+        setActiveTab(newTab);
       }
-    } catch (err) {
-      setRawOutput(`Retry failed: ${err.message}`);
-    } finally {
-      setRawRetrying(false);
-      setIsAiLoading(false);
-    }
-  };
+    },
+    [setActiveTab]
+  );
 
-  const applyAISuggestion = (suggestedScript) => {
-    setScript(suggestedScript);
-    setActiveTab("editor");
-  };
+  // Render active component with error boundary
+  const renderActiveComponent = useMemo(() => {
+    if (!activeTabData) return null;
 
-  const exportScript = () => {
-    const blob = new Blob([script], { type: 'text/plain;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'script.hma';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+    const Component = activeTabData.component;
 
-  const getAIStatusColor = () => {
-    switch (ollamaStatus) {
-      case 'ready': return 'text-emerald-400';
-      case 'slow': return 'text-yellow-400';
-      case 'offline': return 'text-red-400';
-      default: return 'text-slate-400';
-    }
-  };
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <Component {...activeTabData.props} />
+      </Suspense>
+    );
+  }, [activeTabData]);
 
   return (
-    <>
-    <div className="p-4 md:p-6 h-full flex flex-col">
-      <div className="max-w-7xl mx-auto h-full flex flex-col w-full">
-        <header className="mb-6">
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-3xl font-light text-slate-900 dark:text-white mb-2 tracking-tight flex items-center gap-3">
-                  <Code className="w-7 h-7 text-blue-400" />
-                  Script Sage
-                </h1>
-                <p className="text-base text-slate-600 dark:text-slate-400 font-light ml-10">
-                  Master-level HMA/XSE scripting IDE with AI assistance
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className={`flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-800/50 border ${
-                  ollamaStatus === 'ready' ? 'border-emerald-500/30' : 'border-slate-400/30 dark:border-slate-600/30'
-                }`}>
-                  <div className={`w-2 h-2 rounded-full ${
-                    ollamaStatus === 'ready' ? 'bg-emerald-400' : 
-                    ollamaStatus === 'slow' ? 'bg-yellow-400' : 'bg-red-400'
-                  } ${ollamaStatus === 'ready' ? 'animate-pulse' : ''}`} />
-                  <span className={`text-sm font-mono ${getAIStatusColor()}`}>
-                    AI {ollamaStatus.toUpperCase()}
-                  </span>
-                </div>
-                <Button 
-                  onClick={() => setShowAIPanel(!showAIPanel)}
-                  className={`${showAIPanel ? 'bg-purple-600 hover:bg-purple-700' : 'bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700'} text-slate-900 dark:text-white`}
+    <PageShell
+      title="ScriptSage"
+      description="Advanced HMA/XSE script development environment"
+      icon={Code}
+      iconColor="blue"
+      stats={[
+        { label: "Scripts", value: totalScripts, variant: "secondary" },
+        ...(activeProject
+          ? [
+              {
+                label: "Project",
+                value: activeProject.name,
+                variant: "outline",
+              },
+            ]
+          : []),
+      ]}
+      statusIndicator={
+        <StatusIndicator
+          status={ollamaStatus === "checking" ? "loading" : ollamaStatus}
+          labels={{
+            ready: "AI Ready",
+            slow: "AI Slow",
+            offline: "AI Offline",
+            loading: "AI Checking",
+          }}
+        />
+      }
+    >
+      <div className="space-y-6">
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
+          {/* Tab Navigation */}
+          <TabsList className="grid w-full grid-cols-5">
+            {tabConfig.map((tab) => {
+              const IconComponent = tab.icon;
+              return (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className="flex items-center gap-2"
                 >
-                  <Bot className="w-4 h-4 mr-2" />
-                  AI Assistant
-                </Button>
-              </div>
+                  <IconComponent className="w-4 h-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+
+          {/* Tab Content */}
+          <TabsContent value={activeTab} className="mt-0">
+            <Card className="bg-muted/50 backdrop-blur-xl border rounded-2xl shadow-xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-2xl text-blue-400 font-light flex items-center gap-2">
+                  {activeTabData?.icon && (
+                    <activeTabData.icon className="w-5 h-5" />
+                  )}
+                  {activeTabData?.label}
+                </CardTitle>
+                <p className="text-slate-600 dark:text-slate-400">
+                  {activeTabData?.description}
+                </p>
+              </CardHeader>
+              <CardContent>{renderActiveComponent}</CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Offline Notice */}
+      {ollamaStatus === "offline" && (
+        <div className="border border-yellow-300 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg p-4 mt-6">
+          <div className="flex items-center gap-3 text-yellow-800 dark:text-yellow-200">
+            <AlertCircle className="w-5 h-5" />
+            <div>
+              <p className="font-light">Ollama API is not available</p>
+              <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                AI-powered features like script analysis and generation are
+                temporarily unavailable. Make sure Ollama is running on
+                localhost:11435 or check your connection.
+              </p>
             </div>
-          </motion.div>
-        </header>
-
-        <div className="flex-1 flex flex-col">
-          <ScriptEditorTabs activeTab={activeTab} setActiveTab={setActiveTab} onInsertSnippet={insertSnippet} />
-
-          {activeTab === 'editor' && (
-            <div className={`grid gap-4 flex-1 mt-4 ${showAIPanel ? 'grid-cols-1 lg:grid-cols-3' : showVisualFlow ? 'lg:grid-cols-2' : 'lg:grid-cols-1'}`}>
-              <div className={`${showAIPanel ? 'lg:col-span-2' : 'lg:col-span-1'} flex flex-col`}>
-                <Card className="bg-white/90 dark:bg-slate-900/80 border-slate-300 dark:border-slate-800 rounded-xl flex-1 flex flex-col">
-                  <CardHeader className="p-4 flex flex-row items-center justify-between">
-                    <CardTitle className="text-lg text-slate-900 dark:text-white font-light">HMA Script Editor</CardTitle>
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setShowVisualFlow(!showVisualFlow)} className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10">
-                          <Share2 className="w-4 h-4 mr-1" />{showVisualFlow ? 'Hide Flow' : 'Show Flow'}
-                        </Button>
-                      <Button variant="outline" size="sm" onClick={exportScript} className="border-blue-400/50 text-blue-400 hover:bg-blue-500/10">
-                        Export
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0 flex-1">
-                    <Textarea 
-                      value={script} 
-                      onChange={(e) => setScript(e.target.value)} 
-                      className="w-full h-full min-h-[60vh] bg-slate-100 dark:bg-slate-950/50 border-slate-300 dark:border-slate-700/50 rounded-lg font-mono text-sm text-green-600 dark:text-green-400 resize-none" 
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className={`flex flex-col ${showAIPanel || showVisualFlow ? '' : 'hidden'}`}>
-                {showAIPanel ? (
-                  <Card className="bg-white/90 dark:bg-slate-900/80 border-slate-300 dark:border-slate-800 rounded-xl flex-1 flex flex-col h-[70vh]">
-                    <CardHeader className="p-4 pb-2">
-                      <CardTitle className="text-lg text-purple-400 font-light">
-                        <Bot className="w-5 h-5 mr-2 inline-block" />
-                        Script Assistant
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4 flex-1 flex flex-col min-h-0 max-h-full">
-                      <div className="grid grid-cols-2 gap-2 mb-4">
-                        {scriptAIPrompts.slice(0, 4).map((prompt, i) => (
-                          <Button
-                            key={i}
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleQuickPrompt(prompt)}
-                            className="text-xs p-2 h-auto text-left border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
-                          >
-                            <Wand2 className="w-3 h-3 mr-1 flex-shrink-0" />
-                            <span className="truncate">{prompt.split(' ').slice(0, 3).join(' ')}...</span>
-                          </Button>
-                        ))}
-                      </div>
-
-                      <div className="flex-1 overflow-y-auto mb-3 space-y-3 bg-slate-100/50 dark:bg-slate-950/30 rounded-lg p-3 min-h-0">
-                        {aiMessages.length === 0 && (
-                          <div className="text-center text-slate-600 dark:text-slate-500 py-4">
-                            <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                            <p className="text-sm">Ask me anything about your script!</p>
-                          </div>
-                        )}
-                        {aiMessages.map((message, i) => (
-                          <div key={i} className={`flex gap-2 ${message.role === 'user' ? 'justify-end' : ''}`}>
-                            <div className={`max-w-[85%] p-3 rounded-lg text-sm break-words ${
-                              message.role === 'user' 
-                                ? 'bg-blue-600/20 dark:bg-blue-800/30 text-blue-100 dark:text-blue-200 ml-auto' 
-                                : 'bg-slate-200 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200'
-                            }`}>
-                              <div className="whitespace-pre-wrap font-mono text-xs leading-relaxed">{message.content}</div>
-                              {message.role === 'assistant' && message.content.includes('```') && (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => {
-                                    const codeMatch = message.content.match(/```(?:hma|xse|plaintext)?\n([\s\S]*?)\n```/);
-                                    if (codeMatch && codeMatch[1]) {
-                                      applyAISuggestion(codeMatch[1].trim());
-                                    }
-                                  }}
-                                  className="mt-2 text-emerald-400 hover:bg-emerald-500/10"
-                                >
-                                  <Code className="w-3 h-3 mr-1" />
-                                  Apply Code
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                        {isAiLoading && (
-                          <div className="flex gap-2">
-                            <div className="bg-slate-200 dark:bg-slate-800/50 p-3 rounded-lg text-sm text-slate-800 dark:text-slate-200 max-w-[85%]">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-                                <span className="text-purple-400 text-xs">Analyzing script...</span>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex gap-2 mt-auto">
-                        <Input
-                          value={aiInput}
-                          onChange={(e) => setAiInput(e.target.value)}
-                          placeholder="Ask about your script..."
-                          onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleAIQuery(aiInput), setAiInput(''))}
-                          className="bg-slate-100 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-sm"
-                          disabled={isAiLoading}
-                        />
-                        <Button 
-                          onClick={() => {handleAIQuery(aiInput); setAiInput('');}}
-                          disabled={isAiLoading || !aiInput.trim()}
-                          size="sm"
-                          className="bg-purple-600 hover:bg-purple-700"
-                        >
-                          <Send className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : showVisualFlow ? (
-                  <Card className="bg-white/90 dark:bg-slate-900/80 border-slate-300 dark:border-slate-800 rounded-xl flex-1">
-                    <CardHeader className="p-4">
-                      <CardTitle className="text-lg text-emerald-400 font-light">Live Script Flow</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4 h-[55vh] overflow-auto">
-                      <VisualScriptFlow selectedScript={debouncedScript} />
-                    </CardContent>
-                  </Card>
-                ) : null}
-              </div>
-            </div>
-          )}
-        </div>
           </div>
         </div>
-        <RawOutputModal open={rawOutputOpen} onClose={() => setRawOutputOpen(false)} output={rawOutput} onRetry={handleRetryStrict} />
-    </>
+      )}
+    </PageShell>
   );
-}
+};
+
+export default React.memo(ScriptSage);

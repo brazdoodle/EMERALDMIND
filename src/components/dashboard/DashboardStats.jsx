@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Users, Code, Palette, TrendingUp, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
@@ -9,7 +8,7 @@ const StatCard = ({ icon: Icon, title, value, color, delay }) => (
     animate={{ opacity: 1, scale: 1 }}
     transition={{ delay }}
   >
-    <div className={`bg-slate-900/80 dark:bg-slate-900/80 light:bg-white/90 backdrop-blur-sm border border-slate-800 dark:border-slate-800 light:border-slate-300 hover:border-${color}-400/50 transition-all duration-300 rounded-2xl p-4 md:p-6`}>
+    <div className={`bg-slate-900/80 dark:bg-slate-900/80 light:bg-white/90 backdrop-blur-sm border border-slate-800 dark:border-slate-800 light:border-slate-300 hover:border-${color}-400/50 transition-all duration-300 rounded-2xl p-4 md:p-6 lg:p-8`}>
       <div className="flex items-center justify-between mb-3">
         <div className={`p-2 bg-${color}-400/20 rounded-lg`}>
           <Icon className={`w-4 h-4 md:w-5 md:h-5 text-${color}-400`} />
@@ -32,9 +31,13 @@ export default function DashboardStats({ stats }) {
     { icon: Palette, title: "SPRITES VALID", value: stats.sprites, color: "purple", delay: 0.4 },
   ];
 
+  // Expert mode removed — no global expert-mode UI
+  const isExpert = false;
+
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 mb-6 md:mb-8 lg:mb-12">
       {statItems.map(item => <StatCard key={item.title} {...item} />)}
+      {/* expert mode UI removed */}
     </div>
   );
 }

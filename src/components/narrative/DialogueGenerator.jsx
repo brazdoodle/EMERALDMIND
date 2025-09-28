@@ -11,57 +11,85 @@ export default function DialogueGenerator({
   romancerModeEnabled,
   onGenerate
 }) {
+  const copyToClipboard = () => {
+    if (generatedDialogue) {
+      navigator.clipboard.writeText(generatedDialogue);
+    }
+  };
   const [selectedNPC, setSelectedNPC] = useState(null);
   const [generatedDialogue, setGeneratedDialogue] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [selectedMood, setSelectedMood] = useState('');
 
-  const handleGenerateDialogue = async (type) => {
+  const handleGenerateDialogue = async () => {
+    if (!selectedMood) return;
     setIsGenerating(true);
-
-    // Simulate AI generation delay
     setTimeout(async () => {
       let dialogue = await onGenerate('npc_dialogue', {
         npc: selectedNPC,
-        type,
-        romancerModeEnabled
+        type: selectedMood,
+        romancerModeEnabled,
+        customPrompt: customPrompt.trim()
       });
 
-      // Sometimes the AI omits spaces around code blocks, so ensure proper formatting
+      // Remove any TLDR or summary sections from the output
+      dialogue = dialogue.replace(/##\s*🧾 TL;DR[\s\S]*?(?=```|$)/g, "");
       dialogue = dialogue.replace("```json", "```json ");
       dialogue = dialogue.replace("}```", "} ```");
 
+      let parsedDialogue = [];
+      let schemaEnforced = false;
       try {
-        // TODO: Extract this to a utility function for reuse
+        // Extract JSON code block if present
         const codeBlockMatch = dialogue.match(/```json\s*([\s\S]*?)```/);
-
-        if (codeBlockMatch) {
-          const jsonString = codeBlockMatch[1].trim();
-          const parsed = JSON.parse(jsonString);
-
-          if (parsed.dialogue && Array.isArray(parsed.dialogue)) {
-            dialogue = parsed.dialogue.map(d => d.text).join('\n\n');
+        let jsonString = codeBlockMatch ? codeBlockMatch[1].trim() : dialogue.trim();
+        // Remove trailing commas and invalid fragments
+        jsonString = jsonString.replace(/,\s*([}\]])/g, '$1').replace(/([}\]])[^}\]]*$/, '$1');
+        // Try to parse JSON
+        let parsed = {};
+        try {
+          parsed = JSON.parse(jsonString);
+        } catch (_e) {
+          // Fallback: try to extract dialogue array manually
+          const arrMatch = jsonString.match(/"dialogue"\s*:\s*\[(.*?)]/s);
+          if (arrMatch) {
+            // Try to parse each text entry
+            const texts = arrMatch[1].split(/},\s*{/).map(str => {
+              const textMatch = str.match(/"text"\s*:\s*"([^"]+)"/);
+              return textMatch ? textMatch[1] : null;
+            }).filter(Boolean);
+            parsed.dialogue = texts.map(t => ({ text: t }));
           }
         }
-      } catch (error) {
+        if (parsed.dialogue && Array.isArray(parsed.dialogue)) {
+          parsedDialogue = parsed.dialogue.map(d => d.text).filter(Boolean);
+        }
+      } catch (_error) {
         console.error('Error parsing generated dialogue:', error);
       }
 
+      // Always enforce schema for non-battle types
+      if (["intro", "casual", "mysterious"].includes(selectedMood)) {
+        const scriptLocation = selectedNPC?.name ? selectedNPC.name.replace(/\s+/g, '_').toLowerCase() : 'npc_dialogue';
+        const dialogueText = parsedDialogue.join('\n');
+        dialogue = `section0: # <${scriptLocation}>\n  msgbox.npc <auto>\n{\n${dialogueText}\n}\n  end`;
+        schemaEnforced = true;
+      } else if (parsedDialogue.length) {
+        // Battle type: keep default behavior
+        dialogue = parsedDialogue.join('\n\n');
+      }
       setGeneratedDialogue(dialogue);
       setIsGenerating(false);
     }, 1500);
   };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generatedDialogue);
-  };
-
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-yellow-400 mb-4">Dialogue Generator</h2>
         <p className="text-slate-400">
           Generate contextual dialogue for your NPCs using AI assistance.
-          {romancerModeEnabled && " ✨ ROMancer Mode will add surreal and poetic elements."}
+          {romancerModeEnabled && " [Enhanced] ROMancer Mode will add surreal and poetic elements."}
         </p>
       </div>
 
@@ -108,32 +136,48 @@ export default function DialogueGenerator({
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
               <Button
-                onClick={() => handleGenerateDialogue('intro')}
+                onClick={() => setSelectedMood('intro')}
                 disabled={!selectedNPC || isGenerating}
-                className="bg-blue-600 hover:bg-blue-700"
+                className={selectedMood === 'intro' ? "bg-blue-700" : "bg-blue-600 hover:bg-blue-700"}
               >
                 Intro
               </Button>
               <Button
-                onClick={() => handleGenerateDialogue('battle')}
+                onClick={() => setSelectedMood('battle')}
                 disabled={!selectedNPC || isGenerating}
-                className="bg-red-600 hover:bg-red-700"
+                className={selectedMood === 'battle' ? "bg-red-700" : "bg-red-600 hover:bg-red-700"}
               >
                 Battle
               </Button>
               <Button
-                onClick={() => handleGenerateDialogue('casual')}
+                onClick={() => setSelectedMood('casual')}
                 disabled={!selectedNPC || isGenerating}
-                className="bg-green-600 hover:bg-green-700"
+                className={selectedMood === 'casual' ? "bg-green-700" : "bg-green-600 hover:bg-green-700"}
               >
                 Casual
               </Button>
               <Button
-                onClick={() => handleGenerateDialogue('mysterious')}
+                onClick={() => setSelectedMood('mysterious')}
                 disabled={!selectedNPC || isGenerating}
-                className="bg-purple-600 hover:bg-purple-700"
+                className={selectedMood === 'mysterious' ? "bg-purple-700" : "bg-purple-600 hover:bg-purple-700"}
               >
                 Mysterious
+              </Button>
+            </div>
+            <div className="mt-4">
+              <label className="block text-slate-300 font-semibold mb-2">Custom</label>
+              <Textarea
+                value={customPrompt}
+                onChange={e => setCustomPrompt(e.target.value)}
+                className="bg-slate-800 border-slate-600 min-h-12 font-mono w-full"
+                placeholder="Describe the situation, mood, or specific Gen 3 style you want..."
+              />
+              <Button
+                onClick={handleGenerateDialogue}
+                disabled={!selectedNPC || isGenerating || !selectedMood}
+                className="w-full mt-2 bg-yellow-600 hover:bg-yellow-700"
+              >
+                Generate
               </Button>
             </div>
 

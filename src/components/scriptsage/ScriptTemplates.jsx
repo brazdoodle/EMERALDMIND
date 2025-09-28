@@ -1,4 +1,3 @@
-
 // === PROFESSIONAL HMA/XSE SCRIPT TEMPLATES ===
 // Real, tested script templates reflecting authentic ROM hacking syntax
 
@@ -6,7 +5,8 @@ export const scriptTemplates = {
   basic_npc: {
     title: "Basic NPC Dialogue",
     category: "NPCs",
-    description: "Standard NPC conversation with proper structure and pointers.",
+    description:
+      "Standard NPC conversation with proper structure and pointers.",
     difficulty: "Beginner",
     code: `script_npc_standard:
   lock
@@ -21,13 +21,14 @@ text_npc_standard:
   The world of POKéMON is vast
   and full of wonders!
 }`,
-    features: ["Basic dialogue", "Pointer-based text", "Standard lock/release"]
+    features: ["Basic dialogue", "Pointer-based text", "Standard lock/release"],
   },
 
   item_giver_flag_check: {
     title: "Item Giver (with Flag Check)",
     category: "Items",
-    description: "Gives an item only once, with robust bag-full checking. Based on classic ROM hacking patterns.",
+    description:
+      "Gives an item only once, with robust bag-full checking. Based on classic ROM hacking patterns.",
     difficulty: "Intermediate",
     code: `script_item_giver:
   lock
@@ -77,7 +78,12 @@ bag_full_text:
   Oh, it seems your Bag is full.
   Make some space and come back!
 }`,
-    features: ["One-time event (flag)", "Efficient bag check", "Multiple dialogue pointers", "Branching logic"]
+    features: [
+      "One-time event (flag)",
+      "Efficient bag check",
+      "Multiple dialogue pointers",
+      "Branching logic",
+    ],
   },
 
   conditional_npc: {
@@ -107,17 +113,18 @@ before_event_dialogue:
 post_event_dialogue:
 {
   Wow, you beat the GYM LEADER!
-  That's incredible!
+  Well done!
   
-  You're a real pro!
+  You're getting stronger!
 }`,
-    features: ["Flag checking", "Conditional branching", "Story progression"]
+    features: ["Flag checking", "Conditional branching", "Story progression"],
   },
-  
+
   starter_selection: {
     title: "Starter Pokemon Selection",
     category: "Pokemon",
-    description: "A classic starter selection system with choices and subroutines.",
+    description:
+      "A classic starter selection system with choices and subroutines.",
     difficulty: "Advanced",
     code: `script_starter_choice:
   lock
@@ -224,13 +231,19 @@ prof_hows_pokemon:
   I hope you two are getting
   along well!
 }`,
-    features: ["Multiple choices", "Yes/No confirmation", "Subroutines (`call`/`return`)", "Complex branching"]
+    features: [
+      "Multiple choices",
+      "Yes/No confirmation",
+      "Subroutines (`call`/`return`)",
+      "Complex branching",
+    ],
   },
 
   starter_selection_scene: {
     title: "Starter Selection Scene (Official)",
     category: "Cutscenes",
-    description: "The complete, authentic script for the starter selection event when Prof. Birch is attacked.",
+    description:
+      "The complete, authentic script for the starter selection event when Prof. Birch is attacked.",
     difficulty: "Expert",
     code: `script_birch_starter_choice:
   lock
@@ -292,13 +305,21 @@ birch_thank_you_text:
   This is not the place to chat, so come
   by my Pokémon Lab later, okay?
 }`,
-    features: ["Scene setup", "Sprite manipulation", "Hardcoded special functions", "Wait states", "Gender-based logic", "Warping"]
+    features: [
+      "Scene setup",
+      "Sprite manipulation",
+      "Hardcoded special functions",
+      "Wait states",
+      "Gender-based logic",
+      "Warping",
+    ],
   },
 
   gym_leader_battle: {
     title: "Gym Leader Battle Script",
     category: "Trainers",
-    description: "Complete gym leader with pre-battle dialogue and post-battle rewards.",
+    description:
+      "Complete gym leader with pre-battle dialogue and post-battle rewards.",
     difficulty: "Advanced",
     code: `script_gym_leader:
   lock
@@ -353,13 +374,19 @@ leader_rematch_text:
   Keep training and become even
   stronger!
 }`,
-    features: ["Trainer battles", "Badge giving logic", "TM reward", "Trainer flag checking"]
+    features: [
+      "Trainer battles",
+      "Badge giving logic",
+      "TM reward",
+      "Trainer flag checking",
+    ],
   },
 
   cutscene_movement: {
     title: "Cinematic Cutscene",
     category: "Cutscenes",
-    description: "Multi-character cutscene with synchronized movement and dialogue.",
+    description:
+      "Multi-character cutscene with synchronized movement and dialogue.",
     difficulty: "Expert",
     code: `script_cutscene_example:
   lock
@@ -418,13 +445,19 @@ boss_dialogue:
   BOSS: Excellent! No one can
   stop us now!
 }`,
-    features: ["Multi-character movement", "Synchronized timing", "Screen fades", "Scene choreography"]
+    features: [
+      "Multi-character movement",
+      "Synchronized timing",
+      "Screen fades",
+      "Scene choreography",
+    ],
   },
 
   heal_spot_bed: {
     title: "Player Heal Spot (Bed)",
     category: "Cutscenes",
-    description: "A complete, reusable script for healing the player's party when they interact with an object like a bed.",
+    description:
+      "A complete, reusable script for healing the player's party when they interact with an object like a bed.",
     difficulty: "Intermediate",
     code: `script_heal_bed:
   lockall
@@ -447,13 +480,20 @@ text_heal_prompt:
   There's a bed.
   Let's take a rest.
 }`,
-    features: ["Subroutine (call/return)", "Screen fades", "Sound/Fanfare", "Party healing", "lockall/releaseall"]
+    features: [
+      "Subroutine (call/return)",
+      "Screen fades",
+      "Sound/Fanfare",
+      "Party healing",
+      "lockall/releaseall",
+    ],
   },
 
   daily_random_item_giver: {
     title: "Daily Random Item Giver",
     category: "Advanced",
-    description: "NPC gives the player a random item from a specific range, but only once per day.",
+    description:
+      "NPC gives the player a random item from a specific range, but only once per day.",
     difficulty: "Expert",
     code: `script_daily_random_giver:
   lock
@@ -497,14 +537,21 @@ bag_full:
 }
   release
   end`,
-    features: ["Daily event lock", "Random number generation", "Variable math (`addvar`)", "Dynamic item giving", "Bag full check"]
+    features: [
+      "Daily event lock",
+      "Random number generation",
+      "Variable math (`addvar`)",
+      "Dynamic item giving",
+      "Bag full check",
+    ],
   },
 
   // ADVANCED TEMPLATE - LOTTERY SYSTEM
   advanced_daily_lottery: {
     title: "Advanced Daily Lottery System",
     category: "Advanced",
-    description: "Complete daily lottery system with prize tiers, inventory checking, and state management. Based on official game lottery.",
+    description:
+      "Complete daily lottery system with prize tiers, inventory checking, and state management. Based on official game lottery.",
     difficulty: "Expert",
     code: `script_lottery_main:
   lock
@@ -698,23 +745,24 @@ clerk_face_player:
   face_player
 }`,
     features: [
-      "Daily event system", 
-      "Multi-tier prize structure", 
-      "Complex state management", 
-      "Inventory full handling", 
+      "Daily event system",
+      "Multi-tier prize structure",
+      "Complex state management",
+      "Inventory full handling",
       "Delayed prize collection",
       "Professional user experience",
       "Advanced conditionals",
       "Dynamic text substitution",
-      "Hidden statistics tracking"
-    ]
+      "Hidden statistics tracking",
+    ],
   },
 
   advanced_cutscene_battle: {
     title: "Advanced Cutscene with Battle Integration",
     category: "Advanced",
-    description: "Professional cutscene featuring dialogue, battle preparation, and complex sprite choreography. Based on official game cutscenes.",
-    difficulty: "Expert", 
+    description:
+      "Professional cutscene featuring dialogue, battle preparation, and complex sprite choreography. Based on official game cutscenes.",
+    difficulty: "Expert",
     code: `script_advanced_cutscene:
   lockall
   if.flag.set.goto 0x200 <post_battle_section>
@@ -878,20 +926,21 @@ already_defeated_text:
 }`,
     features: [
       "Multi-character dialogue",
-      "Battle system integration", 
+      "Battle system integration",
       "Dynamic movement based on player position",
       "Complex sprite choreography",
       "Party management and restoration",
       "Victory/defeat handling",
       "Professional scene transitions",
-      "State management across game systems"
-    ]
+      "State management across game systems",
+    ],
   },
 
   safari_zone_entry: {
     title: "Safari Zone / Paid Entry",
     category: "Advanced",
-    description: "A complete script for a paid entry area like the Safari Zone, with prerequisite checks.",
+    description:
+      "A complete script for a paid entry area like the Safari Zone, with prerequisite checks.",
     difficulty: "Expert",
     code: `script_safari_entry:
   lockall
@@ -975,13 +1024,20 @@ entry_granted_text:
   Here are your 30 Safari Balls.
   Enjoy yourself!
 }`,
-    features: ["UI Management (Money)", "Transactional Logic", "Prerequisite Checks (Item, Money, Party)", "Game Mode Switching", "Advanced Conditionals"]
+    features: [
+      "UI Management (Money)",
+      "Transactional Logic",
+      "Prerequisite Checks (Item, Money, Party)",
+      "Game Mode Switching",
+      "Advanced Conditionals",
+    ],
   },
 
   environmental_puzzle: {
     title: "Environmental Puzzle / Item Choice",
     category: "Puzzles",
-    description: "A script where taking an item triggers an environmental change and warps the player.",
+    description:
+      "A script where taking an item triggers an environmental change and warps the player.",
     difficulty: "Advanced",
     code: `script_fossil_choice:
   lock
@@ -1041,13 +1097,21 @@ bag_full_text:
 {
   Your bag is full!
 }`,
-    features: ["Conditional Player Choice", "Environmental Effects", "Item Interaction", "Cinematic Effects (Camera Shake)", "Warping", "Subroutines"]
+    features: [
+      "Conditional Player Choice",
+      "Environmental Effects",
+      "Item Interaction",
+      "Cinematic Effects (Camera Shake)",
+      "Warping",
+      "Subroutines",
+    ],
   },
 
   complex_rival_encounter: {
     title: "Complex Rival Encounter (Gender-Based)",
     category: "Battles",
-    description: "Advanced rival battle with gender-specific dialogue, music, choreography, and item rewards.",
+    description:
+      "Advanced rival battle with gender-specific dialogue, music, choreography, and item rewards.",
     difficulty: "Expert",
     code: `main_rival_encounter:
   lockall
@@ -1167,13 +1231,21 @@ reward_dialogue:
   Here's something that will help you
   on your journey!
 }`,
-    features: ["Gender-Specific Logic", "Music Management", "Starter-Based Battles", "Complex Choreography", "Item Rewards", "Advanced Conditionals"]
+    features: [
+      "Gender-Specific Logic",
+      "Music Management",
+      "Starter-Based Battles",
+      "Complex Choreography",
+      "Item Rewards",
+      "Advanced Conditionals",
+    ],
   },
 
   advanced_daycare_system: {
     title: "Advanced Day-care Pokemon System",
     category: "Advanced",
-    description: "Complete Pokemon day-care system with state management, cost calculation, and comprehensive error handling.",
+    description:
+      "Complete Pokemon day-care system with state management, cost calculation, and comprehensive error handling.",
     difficulty: "Expert",
     code: `script_daycare_lady:
   lock
@@ -1418,30 +1490,289 @@ end_conversation:
   end`,
     features: [
       "Complex State Management",
-      "Multi-step Pokemon Handling", 
+      "Multi-step Pokemon Handling",
       "Economic Transaction System",
       "Comprehensive Error Handling",
       "UI Integration",
-      "Sound Management", 
+      "Sound Management",
       "Dynamic Text Substitution",
       "Professional User Experience",
-      "Advanced Special Functions"
-    ]
-  }
+      "Advanced Special Functions",
+    ],
+  },
+
+  // Migrated from ScriptSnippets
+  basic_npc_interaction: {
+    title: "Basic NPC Interaction",
+    category: "NPCs",
+    description: "Simple NPC dialogue with text display",
+    difficulty: "beginner",
+    features: ["Text Display", "Basic Dialogue"],
+    code: `#dynamic 0x800000
+
+faceplayer
+checkflag 0x200
+if_set goto_if @AlreadySpoken
+msgbox @Greeting MSG_NORMAL
+setflag 0x200
+release
+end
+
+@AlreadySpoken:
+msgbox @AlreadySpokenText MSG_NORMAL
+release
+end
+
+@Greeting: .string "Hello! Welcome to our town!$"
+@AlreadySpokenText: .string "We spoke earlier, remember?$"`,
+  },
+
+  item_give_script: {
+    title: "Item Give Script",
+    category: "Items",
+    description: "NPC that gives an item to the player with flag checking",
+    difficulty: "beginner",
+    features: ["Item Management", "Flag Checking", "Inventory"],
+    code: `#dynamic 0x800000
+
+faceplayer
+checkflag 0x201
+if_set goto_if @AlreadyGaveItem
+msgbox @OfferItem MSG_YESNO
+compare LASTRESULT YES
+if_neq goto_if @RefusedItem
+checkitemspace ITEM_POTION 1
+compare LASTRESULT FALSE
+if_eq goto_if @BagFull
+giveitem ITEM_POTION 1
+setflag 0x201
+msgbox @GaveItem MSG_NORMAL
+release
+end
+
+@AlreadyGaveItem:
+msgbox @AlreadyGave MSG_NORMAL
+release
+end
+
+@RefusedItem:
+msgbox @Refused MSG_NORMAL
+release
+end
+
+@BagFull:
+msgbox @NoSpace MSG_NORMAL
+release
+end
+
+@OfferItem: .string "Would you like a Potion?$"
+@GaveItem: .string "Here you go! Use it wisely!$"
+@AlreadyGave: .string "I already gave you a Potion!$"
+@Refused: .string "Maybe next time then.$"
+@NoSpace: .string "Your bag is full!$"`,
+  },
+
+  gym_leader_battle_example: {
+    title: "Gym Leader Battle",
+    category: "Trainers",
+    description: "Complete gym leader battle with badge and TM rewards",
+    difficulty: "intermediate",
+    features: ["Trainer Battles", "Badge System", "TM Rewards"],
+    code: `#dynamic 0x800000
+
+faceplayer
+checkflag 0x820
+if_set goto_if @AlreadyBeaten
+msgbox @Challenge MSG_YESNO
+compare LASTRESULT NO
+if_eq goto_if @Declined
+msgbox @PreBattle MSG_NORMAL
+trainerbattle TRAINER_BATTLE_SINGLE TRAINER_LEADER_BROCK @Defeat @AlreadyBeaten
+goto @GiveBadge
+
+@Declined:
+msgbox @DeclineText MSG_NORMAL
+release
+end
+
+@GiveBadge:
+msgbox @Victory MSG_NORMAL
+playfanfare MUS_OBTAIN_BADGE
+msgbox @BadgeGet MSG_NORMAL
+setflag 0x820
+setflag 0x4B0
+checkitemspace ITEM_TM39 1
+compare LASTRESULT FALSE
+if_eq goto_if @NoRoomTM
+giveitem ITEM_TM39 1
+msgbox @TMGive MSG_NORMAL
+release
+end
+
+@NoRoomTM:
+msgbox @NoSpaceTM MSG_NORMAL
+release
+end
+
+@AlreadyBeaten:
+msgbox @PostBattle MSG_NORMAL
+release
+end
+
+@Challenge: .string "I'm the Gym Leader here!\\nDo you challenge me?$"
+@PreBattle: .string "Let's battle!$"
+@Defeat: .string "You're strong!$"
+@Victory: .string "Impressive! You've earned this!$"
+@BadgeGet: .string "You received the Boulder Badge!$"
+@TMGive: .string "Take this TM as well!$"
+@PostBattle: .string "Keep training hard!$"
+@DeclineText: .string "Come back when you're ready!$"
+@NoSpaceTM: .string "No room for the TM!$"`,
+  },
+
+  movement_script: {
+    title: "Movement Script",
+    category: "Cutscenes",
+    description: "NPC movement and player interaction script",
+    difficulty: "intermediate",
+    features: ["NPC Movement", "Player Interaction", "Direction Control"],
+    code: `#dynamic 0x800000
+
+lock
+faceplayer
+msgbox @Greeting MSG_NORMAL
+closemessage
+applymovement LASTTALKED @WalkAround
+waitmovement LASTTALKED
+msgbox @AfterWalk MSG_NORMAL
+applymovement LASTTALKED @FacePlayer
+waitmovement LASTTALKED
+release
+end
+
+@WalkAround:
+walk_up
+walk_up
+walk_right
+walk_right
+walk_down
+walk_down
+walk_left
+walk_left
+face_player
+end_movement
+
+@FacePlayer:
+face_player
+end_movement
+
+@Greeting: .string "Watch me walk around!$"
+@AfterWalk: .string "Did you see that?$"`,
+  },
+
+  conditional_dialogue: {
+    title: "Conditional Dialogue",
+    category: "NPCs",
+    description: "Multi-branch dialogue based on various conditions",
+    difficulty: "intermediate",
+    features: ["Conditional Logic", "Variable Checking", "Dynamic Responses"],
+    code: `#dynamic 0x800000
+
+faceplayer
+checkflag 0x202
+if_set goto_if @PostQuest
+checkflag 0x203
+if_set goto_if @QuestActive
+msgbox @StartQuest MSG_YESNO
+compare LASTRESULT YES
+if_eq goto_if @AcceptQuest
+msgbox @DeclineQuest MSG_NORMAL
+release
+end
+
+@AcceptQuest:
+msgbox @QuestAccepted MSG_NORMAL
+setflag 0x203
+release
+end
+
+@QuestActive:
+checkitem ITEM_BERRY 5
+compare LASTRESULT TRUE
+if_eq goto_if @QuestComplete
+msgbox @QuestProgress MSG_NORMAL
+release
+end
+
+@QuestComplete:
+msgbox @QuestCompleted MSG_NORMAL
+removeitem ITEM_BERRY 5
+giveitem ITEM_RARE_CANDY 1
+setflag 0x202
+clearflag 0x203
+release
+end
+
+@PostQuest:
+msgbox @QuestFinished MSG_NORMAL
+release
+end
+
+@StartQuest: .string "I need 5 Berries. Can you help?$"
+@AcceptQuest: .string "Thank you! Bring me 5 Berries!$"
+@DeclineQuest: .string "That's okay, maybe later.$"
+@QuestProgress: .string "Still looking for those Berries?$"
+@QuestCompleted: .string "Perfect! Here's your reward!$"
+@QuestFinished: .string "Thanks again for the help!$"`,
+  },
+
+  shop_script: {
+    title: "Shop Script",
+    category: "Items",
+    description: "Custom shop interface with multiple items",
+    difficulty: "advanced",
+    features: ["Shop Interface", "Item Sales", "Money Management"],
+    code: `#dynamic 0x800000
+
+faceplayer
+msgbox @Welcome MSG_NORMAL
+pokemart @ShopItems
+msgbox @ThankYou MSG_NORMAL
+release
+end
+
+@ShopItems:
+.2byte ITEM_POKEBALL
+.2byte ITEM_GREAT_BALL
+.2byte ITEM_ULTRA_BALL
+.2byte ITEM_POTION
+.2byte ITEM_SUPER_POTION
+.2byte ITEM_HYPER_POTION
+.2byte ITEM_ANTIDOTE
+.2byte ITEM_PARALYZE_HEAL
+.2byte ITEM_BURN_HEAL
+.2byte ITEM_ICE_HEAL
+.2byte ITEM_AWAKENING
+.2byte ITEM_FULL_HEAL
+.2byte ITEM_NONE
+
+@Welcome: .string "Welcome to our shop!\\nWhat can I get you today?$"
+@ThankYou: .string "Thank you for shopping with us!$"`,
+  },
 };
 
 // Template categories
 export const templateCategories = [
   "All Templates",
-  "NPCs", 
+  "NPCs",
   "Items",
   "Pokemon",
-  "Trainers", 
+  "Trainers",
   "Cutscenes",
   "Shops",
   "Puzzles", // Added Puzzles category
   "Battles", // Added Battles category
-  "Advanced" 
+  "Advanced",
 ];
 
 // Get templates by category
@@ -1449,16 +1780,20 @@ export function getTemplatesByCategory(category) {
   if (category === "All Templates") {
     return scriptTemplates;
   }
-  
+
   return Object.fromEntries(
-    Object.entries(scriptTemplates).filter(([key, template]) => template.category === category)
+    Object.entries(scriptTemplates).filter(
+      ([key, template]) => template.category === category
+    )
   );
 }
 
 // Get templates by difficulty
 export function getTemplatesByDifficulty(difficulty) {
   return Object.fromEntries(
-    Object.entries(scriptTemplates).filter(([key, template]) => template.difficulty === difficulty)
+    Object.entries(scriptTemplates).filter(
+      ([key, template]) => template.difficulty === difficulty
+    )
   );
 }
 
@@ -1466,11 +1801,14 @@ export function getTemplatesByDifficulty(difficulty) {
 export function searchTemplates(query) {
   const lowerQuery = query.toLowerCase();
   return Object.fromEntries(
-    Object.entries(scriptTemplates).filter(([key, template]) => 
-      template.title.toLowerCase().includes(lowerQuery) ||
-      template.description.toLowerCase().includes(lowerQuery) ||
-      template.features.some(feature => feature.toLowerCase().includes(lowerQuery)) ||
-      template.code.toLowerCase().includes(lowerQuery)
+    Object.entries(scriptTemplates).filter(
+      ([key, template]) =>
+        template.title.toLowerCase().includes(lowerQuery) ||
+        template.description.toLowerCase().includes(lowerQuery) ||
+        template.features.some((feature) =>
+          feature.toLowerCase().includes(lowerQuery)
+        ) ||
+        template.code.toLowerCase().includes(lowerQuery)
     )
   );
 }

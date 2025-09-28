@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     darkMode: ["class"],
-    content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
+    content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}", "./src/test.css"],
   theme: {
   	extend: {
   		borderRadius: {
@@ -59,6 +59,27 @@ module.exports = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
+  			},
+  			// Section-specific colors for consistent theming
+  			development: {
+  				primary: '#3b82f6',
+  				secondary: '#93c5fd',
+  				accent: '#dbeafe'
+  			},
+  			resources: {
+  				primary: '#14b8a6',
+  				secondary: '#5eead4',
+  				accent: '#ccfbf1'
+  			},
+  			creative: {
+  				primary: '#a855f7',
+  				secondary: '#c4b5fd',
+  				accent: '#ede9fe'
+  			},
+  			system: {
+  				primary: '#f97316',
+  				secondary: '#fdba74',
+  				accent: '#ffedd5'
   			}
   		},
   		keyframes: {

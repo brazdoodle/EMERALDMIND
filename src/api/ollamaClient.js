@@ -40,8 +40,8 @@ async function listModels() {
         if (data.models) return data.models;
         if (data.data) return data.data;
         return [];
-      } catch (err) {
-        lastErr = err;
+      } catch (_err) {
+        lastErr = _err;
       }
     }
   }
@@ -51,57 +51,66 @@ async function listModels() {
 async function callOllama({ prompt, model = DEFAULT_MODEL, stream = false, temperature = 0.2, max_tokens = 512, signal } = {}) {
   if (!prompt) throw new Error('No prompt provided to Ollama client');
 
-  // Make sure model exists; if not try to discover available models and pick first
+  // Ensure model availability
   let chosenModel = model;
   try {
     const models = await listModels();
-    // Try to match permissively: normalize names and ignore common separators
     const requested = normalizeModelName(model);
     const found = models.find(m => {
       const candidates = [];
-      if (m.name) candidates.push(m.name);
-      if (m.id) candidates.push(m.id);
-      if (m.model) candidates.push(m.model);
+      if (m?.name) candidates.push(m.name);
+      if (m?.id) candidates.push(m.id);
+      if (m?.model) candidates.push(m.model);
       candidates.push(m);
       return candidates.some(c => normalizeModelName(c) === requested);
     });
-    if (found) {
-      // prefer id/name/model fields as the canonical model name
-      chosenModel = found.id || found.name || found.model || found;
+    if (found) chosenModel = found.id || found.name || found.model || found;
+    else if (models[0]) {
+      chosenModel = models[0].name || models[0].id || models[0].model || models[0];
+      console.warn(`Requested model '${model}' not found. Falling back to '${chosenModel}'.`);
+    } else {
+      throw new Error(`Requested model '${model}' not found and no models available on Ollama.`);
     }
-    if (!found) {
-      // pick a fallback model if available
-      const fallback = models[0];
-      if (fallback) {
-        chosenModel = fallback.name || fallback.id || fallback.model || fallback;
-        console.warn(`Requested model '${model}' not found on Ollama. Falling back to '${chosenModel}'.`);
-      } else {
-        throw new Error(`Requested model '${model}' not found and no models available on Ollama.`);
-      }
-    }
-  } catch (err) {
-    // If listing models failed, continue and allow the request to fail with clearer error
-    console.warn('Could not list Ollama models:', err.message);
+  } catch (_err) {
+    console.warn('Could not list Ollama models:', _err.message);
   }
 
-  // Try a series of known generate/completions endpoints for each base candidate (proxy -> direct)
+  // Endpoint candidates - prioritize standard Ollama API endpoints
   const generatePaths = [
-    '/v1/generate',
-    '/api/generate',
+    '/api/generate',        // Standard Ollama API endpoint
+    '/v1/generate',         // OpenAI-compatible endpoint (if enabled)
     `/v1/llms/${encodeURIComponent(chosenModel)}/completions`,
     `/v1/engines/${encodeURIComponent(chosenModel)}/completions`
   ];
   const generateCandidates = [];
   for (const base of BASE_CANDIDATES) {
     for (const p of generatePaths) {
-      generateCandidates.push({ url: `${base}${p}`, body: { model: chosenModel, prompt, temperature, max_tokens } });
+      // Use appropriate body format based on endpoint
+      let body;
+      if (p === '/api/generate') {
+        // Standard Ollama API format
+        body = { 
+          model: chosenModel, 
+          prompt, 
+          options: { 
+            temperature: temperature || 0.7,
+            num_predict: max_tokens || 100
+          },
+          stream: false
+        };
+      } else {
+        // OpenAI-compatible format for v1 endpoints
+        body = { model: chosenModel, prompt, temperature, max_tokens };
+      }
+      generateCandidates.push({ url: `${base}${p}`, body });
     }
   }
+
   let res;
   let lastErr;
   for (const candidate of generateCandidates) {
     try {
-      // Node-only debug logging: write request body to tmp/ollama_client.log when available
+      // Log request (node only)
       try {
         if (typeof process !== 'undefined' && process.stdout && process.env) {
           const fs = await import('fs');
@@ -110,9 +119,9 @@ async function callOllama({ prompt, model = DEFAULT_MODEL, stream = false, tempe
           if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
           const logPath = path.join(logDir, 'ollama_client.log');
           const entry = `[REQUEST ${new Date().toISOString()}] ${candidate.url} ${JSON.stringify(candidate.body).slice(0,20000)}\n`;
-          try { fs.appendFileSync(logPath, entry); } catch (e) { /* ignore logging errors */ }
+          try { fs.appendFileSync(logPath, entry); } catch (_) {}
         }
-      } catch (e) {}
+      } catch (_) {}
 
       res = await fetch(candidate.url, {
         method: 'POST',
@@ -120,7 +129,8 @@ async function callOllama({ prompt, model = DEFAULT_MODEL, stream = false, tempe
         body: JSON.stringify(candidate.body),
         signal
       });
-      // Log response text in Node environment
+
+      // Log response (node only)
       try {
         if (typeof process !== 'undefined' && process.stdout && process.env) {
           const fs = await import('fs');
@@ -130,23 +140,22 @@ async function callOllama({ prompt, model = DEFAULT_MODEL, stream = false, tempe
           const logPath = path.join(logDir, 'ollama_client.log');
           const txt = await res.clone().text().catch(()=>null);
           const entry = `[RESPONSE ${new Date().toISOString()}] ${candidate.url} status=${res.status} body=${(txt||'').slice(0,20000)}\n`;
-          try { fs.appendFileSync(logPath, entry); } catch (e) { /* ignore logging errors */ }
+          try { fs.appendFileSync(logPath, entry); } catch (_) {}
         }
-      } catch (e) {}
+      } catch (_) {}
+
       if (!res.ok) {
         const txt = await res.text().catch(() => '');
         lastErr = new Error(`Ollama error: ${res.status} ${res.statusText} ${txt}`);
         continue;
       }
       break;
-    } catch (err) {
-      lastErr = err;
+    } catch (_err) {
+      lastErr = _err;
     }
   }
-  if (!res) {
-    throw lastErr || new Error('Ollama generate request failed');
-  }
 
+  if (!res) throw lastErr || new Error('Ollama generate request failed');
   if (!res.ok) {
     const txt = await res.text().catch(() => '');
     const err = new Error(`Ollama error: ${res.status} ${res.statusText} ${txt}`);
@@ -157,56 +166,30 @@ async function callOllama({ prompt, model = DEFAULT_MODEL, stream = false, tempe
   const contentType = res.headers.get('content-type') || '';
   if (contentType.includes('application/json')) {
     const data = await res.json();
-    // Common response shapes: { choices: [{ message: { content } }] }, { choices:[{text}] }, { output: '...' }, { result: ... }
-    if (data.choices && Array.isArray(data.choices) && data.choices.length) {
+    
+    // Handle standard Ollama API response format
+    if (typeof data?.response === 'string') return { content: data.response };
+    
+    // Handle OpenAI-compatible format
+    if (data?.choices?.length) {
       const first = data.choices[0];
-      if (first.message && first.message.content) return { content: first.message.content };
-      if (first.text) return { content: first.text };
-      if (first.output) return { content: first.output };
+      if (first?.message?.content) return { content: first.message.content };
+      if (first?.text) return { content: first.text };
+      if (first?.output) return { content: first.output };
     }
-    if (data.output && typeof data.output === 'string') return { content: data.output };
-    if (typeof data.result === 'string') return { content: data.result };
+    
+    // Handle other response formats
+    if (typeof data?.output === 'string') return { content: data.output };
+    if (typeof data?.result === 'string') return { content: data.result };
     return data;
   }
 
   const text = await res.text();
-  // Detect NDJSON streaming (many JSON objects separated by newlines) and assemble
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const parsed = [];
-  for (const l of lines) {
-    try {
-      parsed.push(JSON.parse(l));
-    } catch (e) {
-      // not JSON line
-    }
-  }
-
-  if (parsed.length) {
-    // Try to assemble a coherent text from known fields used by different Ollama builds
-    // By default, exclude streaming 'thinking' fragments (they're noisy and not part of final content).
-    const assembleNdjsonText = (opts = { includeThinking: false }) => {
-      let assembled = '';
-      for (const p of parsed) {
-        if (!p || typeof p !== 'object') continue;
-        if (typeof p.response === 'string' && p.response.length) assembled += p.response;
-        else if (opts.includeThinking && typeof p.thinking === 'string' && p.thinking.length) assembled += p.thinking;
-        else if (typeof p.content === 'string' && p.content.length) assembled += p.content;
-        else if (p.choices && Array.isArray(p.choices)) {
-          for (const c of p.choices) {
-            if (c.text) assembled += c.text;
-            if (c.message && c.message.content) assembled += c.message.content;
-          }
-        }
-      }
-      return assembled;
-    };
-
-    const assembled = assembleNdjsonText({ includeThinking: false });
-    if (assembled) return { content: assembled, ndjson: parsed };
-    // If nothing useful found and caller explicitly wants raw stream, return full text and ndjson
-    return { content: text, ndjson: parsed };
-  }
-
+  try {
+    const { parseNdjsonStream } = await import('@/lib/llmStream.js');
+    const parsed = parseNdjsonStream(text, { includeThinking: false });
+    if (parsed?.ndjson?.length) return parsed;
+  } catch (_) {}
   return { content: text };
 }
 

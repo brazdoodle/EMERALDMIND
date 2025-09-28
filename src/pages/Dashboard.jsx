@@ -1,20 +1,30 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { ROMProject } from "@/api/entities";
-import { Flag } from "@/api/entities";
-import { Trainer } from "@/api/entities";
-import { Script } from "@/api/entities";
-import { Sprite } from "@/api/entities";
-import { ChangelogEntry } from "@/api/entities";
-import { Home } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  ChangelogEntry,
+  Flag,
+  ROMProject,
+  Script,
+  Sprite,
+  Trainer,
+} from "@/api/entities";
 import { useLabAssistant } from "@/components/shared/LabAssistantService";
+import { PageShell, StatusIndicator } from "@/components/shared/PageShell.jsx";
+import { useUser } from "@/contexts/UserContext";
+import { useAppState } from "@/lib/appState.jsx";
+import {
+  createProjectDirectories,
+  getUserProjects,
+  initializeProjectData,
+  loadCompleteProject,
+} from "@/utils/projectFileSystem";
+import { motion } from "framer-motion";
+import { Home } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
+import DashboardChangelog from "@/components/dashboard/DashboardChangelog";
+import DashboardStats from "@/components/dashboard/DashboardStats";
 import ProjectSelector from "@/components/dashboard/ProjectSelector";
 import QuickActions from "@/components/dashboard/QuickActions";
 import SystemStatus from "@/components/dashboard/SystemStatus";
-import DashboardChangelog from "@/components/dashboard/DashboardChangelog";
-import DashboardStats from "@/components/dashboard/DashboardStats";
-import ThemeToggle from "@/components/shared/ThemeToggle";
 
 /**
  * Dashboard component for EmeraldMind.
@@ -23,18 +33,26 @@ import ThemeToggle from "@/components/shared/ThemeToggle";
  * and selection, serving as the main entry point after login.
  */
 export default function Dashboard() {
-  // State to store the list of available ROM projects.
-  const [projects, setProjects] = useState([]);
-  // State to hold the currently selected project, or null if none is selected/created.
-  const [currentProject, setCurrentProject] = useState(null);
+  // Use global state for project management
+  const { state, actions } = useAppState();
+  const { currentUser } = useUser();
+
   // State to store statistics for the current project (flags, trainers, scripts, sprites counts).
-  const [stats, setStats] = useState({ flags: 0, trainers: 0, scripts: 0, sprites: 0 });
+  const [stats, setStats] = useState({
+    flags: 0,
+    trainers: 0,
+    scripts: 0,
+    sprites: 0,
+  });
   // State to store recent changelog entries for the application.
   const [changelogEntries, setChangelogEntries] = useState([]);
   // State to manage the loading status of the dashboard data.
   const [isLoading, setIsLoading] = useState(true);
   // Custom hook to interact with Lab Assistant (Ollama) service status and knowledge initialization.
   const { ollamaStatus, knowledgeInitialized } = useLabAssistant();
+
+  // Get current project from global state
+  const currentProject = state.currentProject;
 
   /**
    * Loads and updates the statistics for a given project ID.
@@ -49,32 +67,93 @@ export default function Dashboard() {
         Flag.filter({ project_id: projectId }),
         Trainer.filter({ project_id: projectId }),
         Script.filter({ project_id: projectId }),
-        Sprite.filter({ project_id: projectId })
+        Sprite.filter({ project_id: projectId }),
       ]);
       setStats({
         flags: flags.length,
         trainers: trainers.length,
         scripts: scripts.length,
-        sprites: sprites.length
+        sprites: sprites.length,
       });
-    } catch (error) {
+    } catch (_error) {
       console.error("Error loading project stats:", error);
     }
   }, []);
-  
+
   /**
    * Loads the latest changelog entries from the database.
    * Fetches a limited number of the most recent changelog entries to display.
    */
   const loadChangelog = useCallback(async () => {
     try {
-      // Fetches the 5 most recent changelog entries, ordered by creation date descending.
-      const entries = await ChangelogEntry.list('-created_date', 5);
-      setChangelogEntries(entries);
-    } catch (error) {
+      // If a project is active, load project-scoped changelog. Otherwise load recent global entries.
+      let entries = [];
+      if (currentProject?.id) {
+        entries = await ChangelogEntry.filter({
+          project_id: currentProject.id,
+        });
+      } else {
+        entries = await ChangelogEntry.list("-created_date", 5);
+      }
+      setChangelogEntries(entries.slice(0, 5));
+    } catch (_error) {
       console.error("Error loading changelog:", error);
     }
   }, []);
+
+  /**
+   * Loads a specific project and its data from the user's file system
+   * @param {object} project - The project to load
+   */
+  const loadProjectWithData = useCallback(
+    async (project) => {
+      if (!project || !currentUser) return;
+
+      console.log(
+        "Loading project with data:",
+        project.id,
+        "for user:",
+        currentUser.id
+      );
+
+      try {
+        // Set as current project in global state
+        actions.setCurrentProject(project);
+
+        // Load complete project data from user's file system
+        const projectData = loadCompleteProject(currentUser.id, project.id);
+        console.log("Loaded project data from file system:", projectData);
+
+        // Count actual files in each data type
+        const stats = {
+          flags:
+            projectData.structure.flags
+              ?.filter((f) => f.data && f.data.items)
+              ?.reduce((sum, f) => sum + (f.data.items?.length || 0), 0) || 0,
+          trainers:
+            projectData.structure.trainers
+              ?.filter((f) => f.data && f.data.items)
+              ?.reduce((sum, f) => sum + (f.data.items?.length || 0), 0) || 0,
+          scripts:
+            projectData.structure.scripts
+              ?.filter((f) => f.data && f.data.items)
+              ?.reduce((sum, f) => sum + (f.data.items?.length || 0), 0) || 0,
+          sprites:
+            projectData.structure.sprites
+              ?.filter((f) => f.data && f.data.items)
+              ?.reduce((sum, f) => sum + (f.data.items?.length || 0), 0) || 0,
+        };
+
+        console.log("Calculated stats from file system:", stats);
+        setStats(stats);
+      } catch (_error) {
+        console.error("Error loading project data:", error);
+        // Fallback to loading stats from entities
+        await loadProjectStats(project.id);
+      }
+    },
+    [currentUser, actions, loadProjectStats]
+  );
 
   /**
    * Initializes the dashboard by loading all projects, setting the current project
@@ -84,93 +163,202 @@ export default function Dashboard() {
   const loadDashboard = useCallback(async () => {
     setIsLoading(true); // Start loading state
     try {
-      const projectList = await ROMProject.list("-created_date");
-      setProjects(projectList);
-      
-      if (projectList.length > 0) {
-        // Set the most recently created project as the active project.
-        const activeProject = projectList[0];
-        setCurrentProject(activeProject);
-        // Load project-specific stats and global changelog concurrently for efficiency.
-        await Promise.all([
-          loadProjectStats(activeProject.id),
-          loadChangelog()
-        ]);
-      } else {
-        // If no projects exist, reset stats and changelog to their initial empty states.
-        setCurrentProject(null);
+      if (!currentUser) {
+        // No user logged in, clear everything
+        actions.setDashboardProjects([]);
+        actions.setCurrentProject(null);
         setStats({ flags: 0, trainers: 0, scripts: 0, sprites: 0 });
         setChangelogEntries([]);
+        return;
       }
-    } catch (error) {
+
+      // Load projects from both ROMProject entity and user file system, filtered by current user
+      const [allEntityProjects, userProjectIds] = await Promise.all([
+        ROMProject.list("-created_date"),
+        getUserProjects(currentUser.id),
+      ]);
+
+      // Filter entity projects to only show those belonging to current user
+      // For now, we'll assume projects without a user_id field are legacy and belong to default-user
+      const userEntityProjects = allEntityProjects.filter(
+        (project) =>
+          !project.user_id ||
+          project.user_id === currentUser.id ||
+          (currentUser.id === "default-user" && !project.user_id)
+      );
+
+      // Merge entity projects with user file system projects
+      let allProjects = [...userEntityProjects];
+
+      // Add any user file system projects that don't exist as entities
+      if (userProjectIds.length > 0) {
+        const existingProjectIds = new Set(userEntityProjects.map((p) => p.id));
+        const missingProjects = userProjectIds.filter(
+          (id) => !existingProjectIds.has(id)
+        );
+
+        // Create minimal project objects for file system projects
+        const fileSystemProjects = missingProjects.map((id) => ({
+          id,
+          name: `Project ${id}`,
+          description: `Project loaded from user files`,
+          base_rom: "emerald",
+          user_id: currentUser.id, // Explicitly associate with current user
+          created_date: new Date().toISOString(),
+          settings: {
+            auto_backup: true,
+            debug_mode: false,
+            sprite_validation: true,
+          },
+          statistics: {
+            flags_used: 0,
+            trainers_created: 0,
+            scripts_written: 0,
+            sprites_validated: 0,
+          },
+        }));
+
+        allProjects = [...allProjects, ...fileSystemProjects];
+      }
+
+      actions.setDashboardProjects(allProjects);
+
+      if (allProjects.length > 0) {
+        // Check if there's a previously active project for this user
+        const lastActiveProjectId = localStorage.getItem(
+          `lastProject_${currentUser.id}`
+        );
+        let activeProject = allProjects.find(
+          (p) => p.id === lastActiveProjectId
+        );
+
+        // If no previously active project or it doesn't exist, use the most recent
+        if (!activeProject) {
+          activeProject = allProjects[0];
+        }
+
+        // Store the active project for this user
+        localStorage.setItem(`lastProject_${currentUser.id}`, activeProject.id);
+
+        await loadProjectWithData(activeProject);
+        // Load global changelog
+        await loadChangelog();
+      } else {
+        // If no projects exist, reset stats and changelog to their initial empty states.
+        actions.setCurrentProject(null);
+        setStats({ flags: 0, trainers: 0, scripts: 0, sprites: 0 });
+        setChangelogEntries([]);
+        // Clear any stored last project for this user
+        localStorage.removeItem(`lastProject_${currentUser.id}`);
+      }
+    } catch (_error) {
       console.error("Error loading dashboard:", error);
     } finally {
       setIsLoading(false); // End loading state regardless of success or failure.
     }
-  }, [loadProjectStats, loadChangelog]); // Dependencies for useCallback to prevent unnecessary re-creation.
+  }, [
+    loadProjectStats,
+    loadChangelog,
+    loadProjectWithData,
+    actions,
+    currentUser,
+  ]); // Dependencies for useCallback to prevent unnecessary re-creation.
 
   // Effect hook to load the dashboard data on component mount.
   // `loadDashboard` is in the dependency array to ensure the effect re-runs if `loadDashboard`
   // somehow changes (though with useCallback, it's stable unless its dependencies change).
   useEffect(() => {
     loadDashboard();
-  }, [loadDashboard]);
+
+    // Listen for global user changes and reload dashboard accordingly
+    const userChangeHandler = (e) => {
+      console.log("User changed event received:", e?.detail);
+      loadDashboard();
+    };
+
+    // Listen for project data clear events to ensure proper user isolation
+    const clearProjectHandler = () => {
+      // Clear local state
+      setStats({ flags: 0, trainers: 0, scripts: 0, sprites: 0 });
+      setChangelogEntries([]);
+      // Clear global state
+      actions.clearProjectData();
+    };
+
+    if (typeof window !== "undefined" && window.addEventListener) {
+      window.addEventListener("emeraldmind:user-changed", userChangeHandler);
+      window.addEventListener(
+        "emeraldmind:clear-project-data",
+        clearProjectHandler
+      );
+    }
+
+    return () => {
+      if (typeof window !== "undefined" && window.removeEventListener) {
+        window.removeEventListener(
+          "emeraldmind:user-changed",
+          userChangeHandler
+        );
+        window.removeEventListener(
+          "emeraldmind:clear-project-data",
+          clearProjectHandler
+        );
+      }
+    };
+  }, [loadDashboard, actions]);
 
   /**
-   * Creates a new ROM project with default settings and initializes it with a starter template.
+   * Creates a new ROM project with default settings and user integration.
    * After creation, the new project is added to the list and set as the current project.
-   * @param {object} projectData - Data for the new project, e.g., name, description.
+   * @param {string} projectName - Name for the new project.
    */
-  const createNewProject = async (projectData) => {
+  const createNewProject = async (projectName) => {
     try {
-      // Create the new project in the database with predefined default settings and empty statistics.
+      // Create project entity with proper user association
       const newProject = await ROMProject.create({
-        ...projectData,
-        settings: { auto_backup: true, debug_mode: false, sprite_validation: true },
-        statistics: { flags_used: 0, trainers_created: 0, scripts_written: 0, sprites_validated: 0 }
+        name: projectName,
+        description: `Generated ROM hack project: ${projectName}`,
+        base_rom: "emerald",
+        user_id: currentUser?.id || "default-user", // Associate with current user
+        settings: {
+          auto_backup: true,
+          debug_mode: false,
+          sprite_validation: true,
+        },
+        statistics: {
+          flags_used: 0,
+          trainers_created: 0,
+          scripts_written: 0,
+          sprites_validated: 0,
+        },
       });
-      
-      // Update the projects list and set the newly created project as active.
-      setProjects(prev => [newProject, ...prev]);
-      setCurrentProject(newProject);
-      
-      // Populate the new project with some initial starter data (e.g., flags and trainers).
-      await initializeStarterTemplate(newProject.id);
-      // Reload statistics to reflect the newly added starter data.
-      await loadProjectStats(newProject.id);
+
+      // Store as last active project for this user
+      if (currentUser?.id) {
+        localStorage.setItem(`lastProject_${currentUser.id}`, newProject.id);
+      }
+
+      // Create project directory structure
+      const projectStructure = createProjectDirectories(
+        currentUser?.id || "default-user",
+        newProject.id
+      );
+
+      // Initialize project data
+      const projectInitialization = initializeProjectData(
+        currentUser?.id || "default-user",
+        newProject.id,
+        projectName
+      );
+
+      // Reload dashboard to show new project
+      await loadDashboard();
+
+      return newProject;
     } catch (error) {
       console.error("Error creating project:", error);
+      throw error;
     }
-  };
-
-  /**
-   * Initializes a new project with a set of predefined starter flags and trainers.
-   * This provides a basic setup for a new ROM hacking project.
-   * @param {string} projectId - The ID of the project to initialize.
-   */
-  const initializeStarterTemplate = async (projectId) => {
-    // Define a list of starter flags to be created for a new project.
-    const starterFlags = [
-      { flag_id: "0x200", name: "STORY_INTRO_COMPLETE", category: "Story", description: "Player completed intro sequence" },
-      { flag_id: "0x201", name: "FIRST_GYM_BEATEN", category: "Story", description: "First gym leader defeated" },
-      { flag_id: "0x202", name: "RIVAL_BATTLE_1", category: "Trainer", description: "First rival battle triggered" },
-      { flag_id: "0x203", name: "ITEM_PICKUP_POKEBALL", category: "Items", description: "Player picked up the first Poké Ball" },
-      { flag_id: "0x204", name: "NPC_QUEST_STARTED_OLDMAN", category: "NPC", description: "Started quest for Old Man in Viridian City" }
-    ];
-
-    // Define a list of starter trainers to be created for a new project.
-    const starterTrainers = [
-      { name: "Youngster Joey", type: "Youngster", sprite: "YOUNGSTER", pokemon: [{ name: "Rattata", level: 5 }], location: "Route 1", project_id: projectId },
-      { name: "Lass Natalie", type: "Lass", sprite: "LASS", pokemon: [{ name: "Pidgey", level: 4 }, { name: "Oddish", level: 4 }], location: "Viridian Forest", project_id: projectId },
-      { name: "Bug Catcher Rick", type: "Bug Catcher", sprite: "BUG_CATCHER", pokemon: [{ name: "Weedle", level: 6 }], location: "Viridian Forest", project_id: projectId },
-      { name: "Fisherman Ben", type: "Fisherman", sprite: "FISHERMAN", pokemon: [{ name: "Magikarp", level: 10 }], location: "Vermilion City Docks", project_id: projectId },
-      { name: "Camper Todd", type: "Camper", sprite: "CAMPER", pokemon: [{ name: "Sandshrew", level: 8 }], location: "Route 3", project_id: projectId }
-    ];
-
-    // Create all starter flags and trainers concurrently.
-    const flagPromises = starterFlags.map(flag => Flag.create({ project_id: projectId, ...flag }));
-    const trainerPromises = starterTrainers.map(trainer => Trainer.create(trainer));
-    await Promise.all([...flagPromises, ...trainerPromises]);
   };
 
   // Display a loading animation while the dashboard data is being fetched.
@@ -183,54 +371,58 @@ export default function Dashboard() {
           className="text-center"
         >
           <div className="w-16 h-16 border-4 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin mx-auto mb-6"></div>
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Loading EmeraldMind...</h2>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">Initializing your ROM hacking workspace</p>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+            Loading EmeraldMind...
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 mt-2">
+            Initializing your ROM hacking workspace
+          </p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-8">
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-3xl font-light text-slate-900 dark:text-white mb-2 tracking-tight flex items-center gap-3">
-                  <Home className="w-7 h-7 text-emerald-400" />
-                  Dashboard
-                </h1>
-                <p className="text-base text-slate-600 dark:text-slate-400 font-light ml-10">
-                  Welcome to your ROM hacking command center
-                </p>
-              </div>
-              <ThemeToggle />
-            </div>
-          </motion.div>
-        </header>
+    <PageShell
+      icon={Home}
+      iconColor="emerald"
+      title="Dashboard"
+      description="Welcome to your ROM hacking command center"
+      statusIndicator={
+        <StatusIndicator status={ollamaStatus} label="AI Status" />
+      }
+    >
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="xl:col-span-2 space-y-8">
+          <ProjectSelector
+            projects={state.dashboardProjects}
+            currentProject={state.currentProject}
+            onCreateProject={createNewProject}
+            onSelectProject={loadProjectWithData}
+            onDeleteProject={(projectId) => {
+              // Remove from global state
+              const updatedProjects = state.dashboardProjects.filter(
+                (p) => p.id !== projectId
+              );
+              actions.setDashboardProjects(updatedProjects);
+              if (state.currentProject?.id === projectId) {
+                actions.setCurrentProject(null);
+              }
+            }}
+            onRefreshProjects={loadDashboard}
+          />
+          <QuickActions />
+          <DashboardChangelog entries={changelogEntries} />
+        </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          <div className="xl:col-span-2 space-y-8">
-            <ProjectSelector 
-              projects={projects} 
-              currentProject={currentProject} 
-              onCreateProject={createNewProject}
-              onSelectProject={setCurrentProject}
-            />
-            <QuickActions />
-            <DashboardChangelog entries={changelogEntries} />
-          </div>
-          
-          <div className="space-y-8">
-            <SystemStatus 
-              aiStatus={ollamaStatus}
-              knowledgeReady={knowledgeInitialized}
-            />
-            <DashboardStats stats={stats} />
-          </div>
+        <div className="space-y-8">
+          <SystemStatus
+            aiStatus={String(ollamaStatus || "checking")}
+            knowledgeReady={knowledgeInitialized}
+          />
+          <DashboardStats stats={stats} />
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

@@ -1,0 +1,1247 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-09-21T21:09:54.788Z",
+    "totalCommands": 59,
+    "categories": [
+      "core",
+      "battle",
+      "movement",
+      "dialogue",
+      "flags",
+      "vars",
+      "items",
+      "sound",
+      "camera",
+      "weather",
+      "sprites",
+      "map",
+      "special",
+      "flow",
+      "custom"
+    ],
+    "rejectedCommands": [
+      "badcommand"
+    ],
+    "rejectionReasons": {
+      "badcommand": {
+        "reason": "Not a valid HMA command",
+        "timestamp": "2025-09-21T21:09:54.778Z"
+      }
+    }
+  },
+  "commands": [
+    {
+      "id": "faceplayer",
+      "command": "faceplayer",
+      "syntax": "faceplayer",
+      "params": [],
+      "description": "Makes NPC face the player",
+      "examples": [],
+      "category": "custom",
+      "confidence": 0.9,
+      "sources": [
+        "initial_seed",
+        "user_accepted"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.780Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 5,
+        "lastUsed": "2025-09-21T21:09:54.782Z",
+        "contexts": [
+          "generation:basic_npc",
+          "generation:basic_npc",
+          "generation:basic_npc",
+          "generation:basic_npc",
+          "generation:basic_npc"
+        ]
+      }
+    },
+    {
+      "id": "single.battle.continue.silent",
+      "command": "single.battle.continue.silent",
+      "syntax": "single.battle.continue.silent",
+      "params": [],
+      "description": "HMA command: single.battle.continue.silent",
+      "examples": [],
+      "category": "battle",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "double.battle.rematch",
+      "command": "double.battle.rematch",
+      "syntax": "double.battle.rematch",
+      "params": [],
+      "description": "HMA command: double.battle.rematch",
+      "examples": [],
+      "category": "battle",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "special2",
+      "command": "special2",
+      "syntax": "special2",
+      "params": [],
+      "description": "HMA command: special2",
+      "examples": [],
+      "category": "flow",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "fanfare",
+      "command": "fanfare",
+      "syntax": "fanfare",
+      "params": [],
+      "description": "HMA command: fanfare",
+      "examples": [],
+      "category": "sound",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "waitfanfare",
+      "command": "waitfanfare",
+      "syntax": "waitfanfare",
+      "params": [],
+      "description": "HMA command: waitfanfare",
+      "examples": [],
+      "category": "sound",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "lockall",
+      "command": "lockall",
+      "syntax": "lockall",
+      "params": [],
+      "description": "HMA command: lockall",
+      "examples": [],
+      "category": "core",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "pause",
+      "command": "pause",
+      "syntax": "pause",
+      "params": [],
+      "description": "HMA command: pause",
+      "examples": [],
+      "category": "core",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "preparemsg",
+      "command": "preparemsg",
+      "syntax": "preparemsg",
+      "params": [],
+      "description": "HMA command: preparemsg",
+      "examples": [],
+      "category": "dialogue",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "waitmsg",
+      "command": "waitmsg",
+      "syntax": "waitmsg",
+      "params": [],
+      "description": "HMA command: waitmsg",
+      "examples": [],
+      "category": "dialogue",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "msgbox",
+      "command": "msgbox",
+      "syntax": "msgbox",
+      "params": [],
+      "description": "HMA command: msgbox",
+      "examples": [],
+      "category": "dialogue",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 6,
+        "lastUsed": "2025-09-21T21:09:54.782Z",
+        "contexts": [
+          "generation:basic_npc",
+          "generation:basic_npc",
+          "generation:basic_npc",
+          "generation:trainer_battle",
+          "generation:basic_npc",
+          "generation:basic_npc"
+        ]
+      }
+    },
+    {
+      "id": "msgbox.default",
+      "command": "msgbox.default",
+      "syntax": "msgbox.default",
+      "params": [],
+      "description": "HMA command: msgbox.default",
+      "examples": [],
+      "category": "dialogue",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "msgbox.autoclose",
+      "command": "msgbox.autoclose",
+      "syntax": "msgbox.autoclose",
+      "params": [],
+      "description": "HMA command: msgbox.autoclose",
+      "examples": [],
+      "category": "dialogue",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "call",
+      "command": "call",
+      "syntax": "call",
+      "params": [],
+      "description": "HMA command: call",
+      "examples": [],
+      "category": "flow",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "goto",
+      "command": "goto",
+      "syntax": "goto",
+      "params": [],
+      "description": "HMA command: goto",
+      "examples": [],
+      "category": "flow",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "return",
+      "command": "return",
+      "syntax": "return",
+      "params": [],
+      "description": "HMA command: return",
+      "examples": [],
+      "category": "custom",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "release",
+      "command": "release",
+      "syntax": "release",
+      "params": [],
+      "description": "HMA command: release",
+      "examples": [],
+      "category": "core",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 6,
+        "lastUsed": "2025-09-21T21:09:54.782Z",
+        "contexts": [
+          "generation:basic_npc",
+          "generation:basic_npc",
+          "generation:basic_npc",
+          "generation:trainer_battle",
+          "generation:basic_npc",
+          "generation:basic_npc"
+        ]
+      }
+    },
+    {
+      "id": "end",
+      "command": "end",
+      "syntax": "end",
+      "params": [],
+      "description": "HMA command: end",
+      "examples": [],
+      "category": "core",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 6,
+        "lastUsed": "2025-09-21T21:09:54.782Z",
+        "contexts": [
+          "generation:basic_npc",
+          "generation:basic_npc",
+          "generation:basic_npc",
+          "generation:trainer_battle",
+          "generation:basic_npc",
+          "generation:basic_npc"
+        ]
+      }
+    },
+    {
+      "id": "warp8",
+      "command": "warp8",
+      "syntax": "warp8",
+      "params": [],
+      "description": "HMA command: warp8",
+      "examples": [],
+      "category": "map",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "warp",
+      "command": "warp",
+      "syntax": "warp",
+      "params": [],
+      "description": "HMA command: warp",
+      "examples": [],
+      "category": "map",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "waitstate",
+      "command": "waitstate",
+      "syntax": "waitstate",
+      "params": [],
+      "description": "HMA command: waitstate",
+      "examples": [],
+      "category": "custom",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "waitsound",
+      "command": "waitsound",
+      "syntax": "waitsound",
+      "params": [],
+      "description": "HMA command: waitsound",
+      "examples": [],
+      "category": "sound",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "waitcry",
+      "command": "waitcry",
+      "syntax": "waitcry",
+      "params": [],
+      "description": "HMA command: waitcry",
+      "examples": [],
+      "category": "sound",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "setflag",
+      "command": "setflag",
+      "syntax": "setflag",
+      "params": [],
+      "description": "HMA command: setflag",
+      "examples": [],
+      "category": "flags",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "clearflag",
+      "command": "clearflag",
+      "syntax": "clearflag",
+      "params": [],
+      "description": "HMA command: clearflag",
+      "examples": [],
+      "category": "flags",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "setvar",
+      "command": "setvar",
+      "syntax": "setvar",
+      "params": [],
+      "description": "HMA command: setvar",
+      "examples": [],
+      "category": "vars",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "addvar",
+      "command": "addvar",
+      "syntax": "addvar",
+      "params": [],
+      "description": "HMA command: addvar",
+      "examples": [],
+      "category": "vars",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "copyvar",
+      "command": "copyvar",
+      "syntax": "copyvar",
+      "params": [],
+      "description": "HMA command: copyvar",
+      "examples": [],
+      "category": "vars",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "if.compare.call",
+      "command": "if.compare.call",
+      "syntax": "if.compare.call",
+      "params": [],
+      "description": "HMA command: if.compare.call",
+      "examples": [],
+      "category": "flow",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "if.compare.goto",
+      "command": "if.compare.goto",
+      "syntax": "if.compare.goto",
+      "params": [],
+      "description": "HMA command: if.compare.goto",
+      "examples": [],
+      "category": "flow",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "if.yes.goto",
+      "command": "if.yes.goto",
+      "syntax": "if.yes.goto",
+      "params": [],
+      "description": "HMA command: if.yes.goto",
+      "examples": [],
+      "category": "flow",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "if.no.goto",
+      "command": "if.no.goto",
+      "syntax": "if.no.goto",
+      "params": [],
+      "description": "HMA command: if.no.goto",
+      "examples": [],
+      "category": "flow",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "if.flag.clear.goto",
+      "command": "if.flag.clear.goto",
+      "syntax": "if.flag.clear.goto",
+      "params": [],
+      "description": "HMA command: if.flag.clear.goto",
+      "examples": [],
+      "category": "flags",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "if.",
+      "command": "if.",
+      "syntax": "if.",
+      "params": [],
+      "description": "HMA command: if.",
+      "examples": [],
+      "category": "flow",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "npc.item",
+      "command": "npc.item",
+      "syntax": "npc.item",
+      "params": [],
+      "description": "HMA command: npc.item",
+      "examples": [],
+      "category": "items",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "defeatedtrainer",
+      "command": "defeatedtrainer",
+      "syntax": "defeatedtrainer",
+      "params": [],
+      "description": "HMA command: defeatedtrainer",
+      "examples": [],
+      "category": "battle",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "npc.giveitem",
+      "command": "npc.giveitem",
+      "syntax": "npc.giveitem",
+      "params": [],
+      "description": "HMA command: npc.giveitem",
+      "examples": [],
+      "category": "items",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "npc.talk",
+      "command": "npc.talk",
+      "syntax": "npc.talk",
+      "params": [],
+      "description": "HMA command: npc.talk",
+      "examples": [],
+      "category": "custom",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "special",
+      "command": "special",
+      "syntax": "special",
+      "params": [],
+      "description": "HMA command: special",
+      "examples": [],
+      "category": "flow",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "move.camera",
+      "command": "move.camera",
+      "syntax": "move.camera",
+      "params": [],
+      "description": "HMA command: move.camera",
+      "examples": [],
+      "category": "movement",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "move.npc",
+      "command": "move.npc",
+      "syntax": "move.npc",
+      "params": [],
+      "description": "HMA command: move.npc",
+      "examples": [],
+      "category": "movement",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "move.player",
+      "command": "move.player",
+      "syntax": "move.player",
+      "params": [],
+      "description": "HMA command: move.player",
+      "examples": [],
+      "category": "movement",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "applymovement",
+      "command": "applymovement",
+      "syntax": "applymovement",
+      "params": [],
+      "description": "HMA command: applymovement",
+      "examples": [],
+      "category": "movement",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "hidesprite",
+      "command": "hidesprite",
+      "syntax": "hidesprite",
+      "params": [],
+      "description": "HMA command: hidesprite",
+      "examples": [],
+      "category": "sprites",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "showsprite",
+      "command": "showsprite",
+      "syntax": "showsprite",
+      "params": [],
+      "description": "HMA command: showsprite",
+      "examples": [],
+      "category": "sprites",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "spawncameraobject",
+      "command": "spawncameraobject",
+      "syntax": "spawncameraobject",
+      "params": [],
+      "description": "HMA command: spawncameraobject",
+      "examples": [],
+      "category": "camera",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "removecameraobject",
+      "command": "removecameraobject",
+      "syntax": "removecameraobject",
+      "params": [],
+      "description": "HMA command: removecameraobject",
+      "examples": [],
+      "category": "movement",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "setmaptile",
+      "command": "setmaptile",
+      "syntax": "setmaptile",
+      "params": [],
+      "description": "HMA command: setmaptile",
+      "examples": [],
+      "category": "map",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "setweather",
+      "command": "setweather",
+      "syntax": "setweather",
+      "params": [],
+      "description": "HMA command: setweather",
+      "examples": [],
+      "category": "weather",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "doweather",
+      "command": "doweather",
+      "syntax": "doweather",
+      "params": [],
+      "description": "HMA command: doweather",
+      "examples": [],
+      "category": "weather",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "waitweather",
+      "command": "waitweather",
+      "syntax": "waitweather",
+      "params": [],
+      "description": "HMA command: waitweather",
+      "examples": [],
+      "category": "weather",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "sound",
+      "command": "sound",
+      "syntax": "sound",
+      "params": [],
+      "description": "HMA command: sound",
+      "examples": [],
+      "category": "sound",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "cry",
+      "command": "cry",
+      "syntax": "cry",
+      "params": [],
+      "description": "HMA command: cry",
+      "examples": [],
+      "category": "sound",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "fadescreendelay",
+      "command": "fadescreendelay",
+      "syntax": "fadescreendelay",
+      "params": [],
+      "description": "HMA command: fadescreendelay",
+      "examples": [],
+      "category": "core",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "fadesong",
+      "command": "fadesong",
+      "syntax": "fadesong",
+      "params": [],
+      "description": "HMA command: fadesong",
+      "examples": [],
+      "category": "sound",
+      "confidence": 0.3,
+      "sources": [
+        "initial_seed"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.545Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "newcommand",
+      "command": "newcommand",
+      "syntax": "newcommand param1",
+      "params": [],
+      "description": "Test command description",
+      "examples": [],
+      "category": "core",
+      "confidence": 0.9,
+      "sources": [
+        "user_accepted"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.778Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "unknowncmd",
+      "command": "unknowncmd",
+      "syntax": "unknowncmd",
+      "params": [],
+      "description": "Mock AI description for command",
+      "examples": [],
+      "category": "custom",
+      "confidence": 0.4,
+      "sources": [
+        "ai_suggestion"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.778Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "improvecmd",
+      "command": "improvecmd",
+      "syntax": "improvecmd",
+      "params": [],
+      "description": "Mock AI description for command",
+      "examples": [],
+      "category": "custom",
+      "confidence": 0.4,
+      "sources": [
+        "ai_suggestion"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.779Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    },
+    {
+      "id": "testcmd",
+      "command": "testcmd",
+      "syntax": "testcmd",
+      "params": [],
+      "description": "Test command",
+      "examples": [],
+      "category": "custom",
+      "confidence": 0.8,
+      "sources": [
+        "user_accepted"
+      ],
+      "lastReviewed": "2025-09-21T21:09:54.779Z",
+      "aliases": [],
+      "relatedCommands": [],
+      "usage": {
+        "count": 0,
+        "lastUsed": null
+      }
+    }
+  ]
+}
