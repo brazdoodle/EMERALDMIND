@@ -70,7 +70,7 @@ const server = http.createServer(async (req, res) => {
     if (body) proxyReq.write(body);
     proxyReq.end();
 
-  } catch (e) {
+  } catch (_e) {
     log(`SERVER_ERROR ${e.stack || e.message}`);
     console.error('Proxy server error:', e);
     res.statusCode = 500;
@@ -86,19 +86,19 @@ server.listen(PORT, () => {
     // also write a startup marker with pid
     const pidPath = path.resolve(__dirname, '..', 'tmp', 'ollama_proxy.pid');
     fs.appendFileSync(pidPath, `${new Date().toISOString()} PID:${process.pid} PORT:${PORT} TARGET:${TARGET}\n`);
-  } catch (e) {
+  } catch (_e) {
     // ignore pid write errors
   }
 });
 
 process.on('uncaughtException', (err) => {
-  try { log(`UNCAUGHT_EXCEPTION ${err.stack || err.message}`); } catch (e) {}
+  try { log(`UNCAUGHT_EXCEPTION ${err.stack || err.message}`); } catch (_e) {}
   console.error('Uncaught exception in proxy:', err);
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason) => {
-  try { log(`UNHANDLED_REJECTION ${reason && reason.stack ? reason.stack : String(reason)}`); } catch (e) {}
+  try { log(`UNHANDLED_REJECTION ${reason && reason.stack ? reason.stack : String(reason)}`); } catch (_e) {}
   console.error('Unhandled rejection in proxy:', reason);
   process.exit(1);
 });

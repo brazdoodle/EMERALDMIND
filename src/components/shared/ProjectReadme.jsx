@@ -2,7 +2,6 @@
  * This file is for documentation purposes and is not directly used in the app's runtime.
  * It provides a comprehensive overview of the EmeraldMind ROM Hacking Suite.
  */
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 

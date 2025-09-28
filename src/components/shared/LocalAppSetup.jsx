@@ -1,4 +1,3 @@
-import React from 'react';
 
 // === LOCAL DEVELOPMENT FOUNDATION ===
 // This component provides the basic app structure for local development
@@ -12,6 +11,7 @@ import Dashboard from '../pages/Dashboard';
 import LabAssistant from '../pages/LabAssistant';
 import FlagForge from '../pages/FlagForge';
 import ScriptSage from '../pages/ScriptSage';
+import ProgrammaticGenerator from '../pages/ProgrammaticGenerator';
 import TrainerArchitect from '../pages/TrainerArchitect';
 import SpriteValidator from '../pages/SpriteValidator';
 import NarrativeEngine from '../pages/NarrativeEngine';
@@ -41,6 +41,11 @@ function App() {
         <Route path="/scriptsage" element={
           <Layout currentPageName="ScriptSage">
             <ScriptSage />
+          </Layout>
+        } />
+        <Route path="/programmaticgenerator" element={
+          <Layout currentPageName="ProgrammaticGenerator">
+            <ProgrammaticGenerator />
           </Layout>
         } />
         <Route path="/trainerarchitect" element={

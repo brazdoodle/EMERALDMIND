@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -51,7 +50,7 @@ export default function QuickActions({ currentProject }) {
       <CardContent className="p-4 md:p-6 pt-0">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           {actions.map((action, index) =>
-          <Link key={index} to={createPageUrl(action.page)} className="block group">
+          <Link key={index} to={createPageUrl(action.page)} className="block group" title={`Navigate to ${action.title} - ${action.description}`}>
               <div className="p-4 md:p-5 border border-slate-700/50 dark:border-slate-700/50 light:border-slate-200 hover:border-slate-600/50 dark:hover:border-slate-600/50 light:hover:border-slate-300 bg-slate-800/30 dark:bg-slate-800/30 light:bg-slate-100 hover:bg-slate-800/50 dark:hover:bg-slate-800/50 light:hover:bg-slate-200 rounded-xl transition-all duration-300 hover:scale-[1.02]">
                 <div className="flex items-start gap-3">
                   <div className={`p-2 rounded-lg bg-gradient-to-r ${action.gradient} bg-opacity-20 group-hover:bg-opacity-30 transition-all`}>

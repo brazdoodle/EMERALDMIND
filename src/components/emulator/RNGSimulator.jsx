@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -62,7 +61,7 @@ export default function RNGSimulator() {
       const table = JSON.parse(encounterTable);
       const simResults = simulateEncounters(seed, table, count);
       setResults(simResults);
-    } catch (error) {
+    } catch (_error) {
       console.error('Invalid encounter table JSON:', error);
     }
   };

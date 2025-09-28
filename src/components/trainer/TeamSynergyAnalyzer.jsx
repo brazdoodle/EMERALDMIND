@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Sword, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { typeChart, getPokemonDetails } from './PokemonData';
@@ -20,25 +19,44 @@ export default function TeamSynergyAnalyzer({ party }) {
   }
 
   const defensiveAnalysis = allTypes.reduce((acc, attackingType) => {
-    let score = 0;
+    let teamWeaknesses = 0;
+    let teamResistances = 0;
+    
     party.forEach(member => {
+      // Add safety check for member and species
+      if (!member || !member.species) return;
+      
       const details = getPokemonDetails(member.species);
       if (!details) return;
 
-      let multiplier = 1;
+      // Calculate type effectiveness for this Pokemon
+      let totalMultiplier = 1;
       details.types.forEach(defendingType => {
-        multiplier *= typeChart[attackingType]?.[defendingType] ?? 1;
+        const effectiveness = typeChart[attackingType]?.[defendingType] ?? 1;
+        totalMultiplier *= effectiveness;
       });
       
-      if (multiplier > 1) score++; // Weakness
-      if (multiplier < 1) score--; // Resistance
+      // Categorize the effectiveness
+      if (totalMultiplier >= 2) teamWeaknesses++;       // Weak to this type
+      else if (totalMultiplier >= 1.5) teamWeaknesses += 0.5; // Slightly weak
+      else if (totalMultiplier <= 0.25) teamResistances++;    // Strong resistance
+      else if (totalMultiplier <= 0.5) teamResistances += 0.5; // Some resistance
     });
-    acc[attackingType] = score;
+    
+    // Net score: negative = good (more resistances), positive = bad (more weaknesses)
+    acc[attackingType] = teamWeaknesses - teamResistances;
     return acc;
   }, {});
 
-  const weaknesses = Object.entries(defensiveAnalysis).filter(([, score]) => score > 1).sort((a, b) => b[1] - a[1]);
-  const resistances = Object.entries(defensiveAnalysis).filter(([, score]) => score < -1).sort((a, b) => a[1] - b[1]);
+  const weaknesses = Object.entries(defensiveAnalysis)
+    .filter(([, score]) => score > 0.5) // Show significant weaknesses
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8); // Limit to top 8 weaknesses
+    
+  const resistances = Object.entries(defensiveAnalysis)
+    .filter(([, score]) => score < -0.5) // Show significant resistances
+    .sort((a, b) => a[1] - b[1])
+    .slice(0, 8); // Limit to top 8 resistances
 
   return (
     <motion.div

@@ -1,22 +1,22 @@
 // This file is the entry point for local development.
 // It sets up the React application root and routing.
 
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from '../../layout.js';
+import Layout from '../../pages/Layout.jsx';
 
 // Import all pages
-import Dashboard from '../../pages/Dashboard.js';
-import FlagForge from '../../pages/FlagForge.js';
-import TrainerArchitect from '../../pages/TrainerArchitect.js';
-import ScriptSage from '../../pages/ScriptSage.js';
-import SpriteStudio from '../../pages/SpriteStudio.js';
-import NarrativeEngine from '../../pages/NarrativeEngine.js';
-import LabAssistant from '../../pages/LabAssistant.js';
-import PreviewTab from '../../pages/PreviewTab.js';
-import BugCatcher from '../../pages/BugCatcher.js';
-import Docs from '../../pages/Docs.js';
+import Dashboard from '../../pages/Dashboard.jsx';
+import FlagForge from '../../pages/FlagForge.jsx';
+import TrainerArchitect from '../../pages/TrainerArchitect.jsx';
+import ScriptSage from '../../pages/ScriptSage.jsx';
+import SpriteStudio from '../../pages/SpriteStudio.jsx';
+import NarrativeEngine from '../../pages/NarrativeEngine.jsx';
+import LabAssistant from '../../pages/LabAssistant.jsx';
+import PreviewTab from '../../pages/PreviewTab.jsx';
+import BugCatcher from '../../pages/BugCatcher.jsx';
+import Docs from '../../pages/Docs.jsx';
+import ProgrammaticGenerator from '../../pages/ProgrammaticGenerator.jsx';
 
 const App = () => {
   const pages = [
@@ -29,7 +29,8 @@ const App = () => {
     { path: "/LabAssistant", component: LabAssistant },
     { path: "/PreviewTab", component: PreviewTab },
     { path: "/BugCatcher", component: BugCatcher },
-    { path: "/Docs", component: Docs },
+  { path: "/Docs", component: Docs },
+  { path: "/ProgrammaticGenerator", component: ProgrammaticGenerator },
   ];
 
   return (
